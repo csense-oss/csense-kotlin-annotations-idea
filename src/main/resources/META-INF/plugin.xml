@@ -1,0 +1,36 @@
+<idea-plugin>
+    <id>csense-idea.csense-kotlin-annotations</id>
+    <name>Csense javafx</name>
+    <vendor email="csenseoss@tvedesys.dk" url="http://www.tvedesys.dk/csenseoss">Csenseoss @ Tvedesys</vendor>
+
+    <description>This plugin provides annotations based SA to help with
+        - external annotations
+        - MPP capable annotations (all of the kotlin ecosystem)
+        - Threading
+        - number ranges
+        - and more
+        This is still an early WIP.
+
+    </description>
+
+    <depends>com.intellij.modules.lang</depends>
+    <depends>org.jetbrains.kotlin</depends>
+    <depends>com.intellij.modules.java</depends>
+
+
+    <!--  Ability to annotate externally.  -->
+    <extensions defaultExtensionNs="com.intellij">
+        <java.externalAnnotation
+                implementation="csense.kotlin.annotations.idea.externalAnnotations.AnyThreadExternalAnnotation"/>
+        <java.externalAnnotation
+                implementation="csense.kotlin.annotations.idea.externalAnnotations.InUIExternalAnnotation"/>
+
+    </extensions>
+
+    <extensionPoints>
+    </extensionPoints>
+
+    <actions>
+        <!-- Add your actions here -->
+    </actions>
+</idea-plugin>
