@@ -27,6 +27,11 @@
 
     </extensions>
 
+    <extensions defaultExtensionNs="com.intellij">
+        <inspectionToolProvider
+                implementation="csense.kotlin.annotations.idea.inspections.InspectionProvider"/>
+    </extensions>
+
     <extensionPoints>
     </extensionPoints>
 
