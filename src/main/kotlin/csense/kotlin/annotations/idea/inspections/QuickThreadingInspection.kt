@@ -5,22 +5,32 @@ import com.intellij.codeInsight.ExternalAnnotationsManager
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiMethod
+import csense.kotlin.Function0
+import csense.kotlin.annotations.idea.ClassHierarchyAnnotationsCache
 import csense.kotlin.annotations.idea.Constants
+import csense.kotlin.annotations.idea.bll.getKotlinFqNameString
+import csense.kotlin.annotations.idea.psi.resolveAllClassAnnotations
+import csense.kotlin.annotations.idea.psi.resolveAllMethodAnnotations
+import org.jetbrains.kotlin.asJava.elements.KtLightMethod
 import org.jetbrains.kotlin.idea.inspections.AbstractKotlinInspection
 import org.jetbrains.kotlin.idea.references.resolveMainReferenceToDescriptors
 import org.jetbrains.kotlin.js.resolve.diagnostics.findPsi
 import org.jetbrains.kotlin.psi.*
+import org.jetbrains.kotlin.psi.psiUtil.containingClassOrObject
 import org.jetbrains.kotlin.psi.psiUtil.forEachDescendantOfType
 import org.jetbrains.kotlin.resolve.calls.callUtil.getCalleeExpressionIfAny
-import org.jetbrains.uast.UMethod
+import org.jetbrains.uast.UAnnotation
 import org.jetbrains.uast.UResolvable
 import org.jetbrains.uast.toUElement
-import org.jetbrains.uast.toUElementOfType
 
 //purpose: to provide simple (non deep) inspection of threading issues (where we look at
 // @AnyThread / @InUi threading
 // we should also look into
 // Android annotations & idea annotations to provide help in theses scenario's as well.
+// well the "AnyThread" is any method that is not annotated.
+// it should be "worker" / "background" ish something.
+// the same for "IO" (which is also bad to do on a UI thread).
+
 
 class QuickThreadingInspection : AbstractKotlinInspection() {
     //eg look for:
@@ -61,50 +71,262 @@ class QuickThreadingInspection : AbstractKotlinInspection() {
 
     override fun buildVisitor(holder: ProblemsHolder,
                               isOnTheFly: Boolean): KtVisitorVoid {
-        return namedFunctionVisitor {
-            val assumeAllIsAny = false
-            val thisThreading = it.ComputeThreading()
-
-            val isThisBackground = assumeAllIsAny || thisThreading.isAnyThreaded
+        return namedFunctionVisitor { ourCallFunction: KtNamedFunction ->
+            val extMan = ExternalAnnotationsManager.getInstance(ourCallFunction.project)
+            val start = System.currentTimeMillis()
+            val parentContext = ClassHierarchyAnnotationsCache.getClassHierarchyAnnotaions(ourCallFunction.containingClassOrObject, extMan).computeAnnotationContext() //infer parent if possible
+            val end = System.currentTimeMillis() - start
+            println("took $end ms to compute all annotation")
+            //if "ourCallFunction" does not dictate a threading , we may infer it from the parent class / object which is what happens next.
+            val thisThreading = ourCallFunction.computeThreading(extMan)
+                    ?: parentContext
+            val isThisBackground = thisThreading?.isBackgroundThreaded ?: false
             //skip if no available data.
-            if (!isThisBackground && !thisThreading.isUiThreaded) {
+            if (thisThreading == null || !isThisBackground && !thisThreading.isUiThreaded) {
                 //no knowledge of this method.. just skip.
                 return@namedFunctionVisitor
             }
-            //sanity check no one does both types at ones
-            if (thisThreading.isAnyThreaded && thisThreading.isUiThreaded) {
-                holder.registerProblem(it.nameIdentifier
-                        ?: it, "This method is annotated both as any threaded and ui threaded. Annotate it according to what type its supposed to be.")
+            //sanity check no one does both types of annotations at ones
+            if (thisThreading.isInvalid()) {
+                holder.registerProblem(ourCallFunction.nameIdentifier
+                        ?: ourCallFunction, "This method is annotated both as any threaded and ui threaded. Annotate ourCallFunction according to what type its supposed to be.")
                 return@namedFunctionVisitor
             }
             //now we are either of them, then collect and see if any children are the opposite type.
+            //TODO consider "fast" slow threading concepts...(and potential slow) (say we can tell if a function is "maybe" slow)
+            ourCallFunction.forEachDescendantOfType { exp: KtCallExpression ->
+                val psiResolved = exp.resolvePsi() ?: return@forEachDescendantOfType
+                val annotations = psiResolved.resolveAllMethodAnnotations(extMan)
+                val methodThreading = annotations.computeThreading()
 
-            //TODO when doing this, we are to "lookup" if the exp is inside of something that changes the "scope" of our threading.
+                val threadTypes: Threading? = methodThreading
+                        ?: psiResolved.parent?.resolveAllClassAnnotations(extMan)
+                                ?.computeAnnotationContext()//infer parent if possible
 
-            it.forEachDescendantOfType { exp: KtCallExpression ->
 
-
-                val annot = exp.resolvePsi()?.toUElementOfType<UMethod>()?.annotations
-
-                val threadTypes: Threading? = when (val resolvedChild = exp.resolvePsi()) {
-                    is PsiMethod -> {
-                        val extLookup = ExternalAnnotationsManager.getInstance(exp.project)
-                        resolvedChild.ComputeThreading(extLookup)
+                if (threadTypes != null) { //we are only afraid of UI threading.
+                    var haveReportedIssue = false
+                    exp.goUpUntil(ourCallFunction) {
+                        val x = it.computeThreadingFromTo() ?: return@goUpUntil
+                        if (threadTypes.isInValidFor(x)) {
+                            //threadType is the root problem (the call) the context change is where the things" went wrong".
+                            holder.registerProblem(it, threadTypes.computeErrorMessageToThis())
+                            haveReportedIssue = true
+                        } else {
+                            return@forEachDescendantOfType //skip this, as we are in a "valid" context.
+                        }
                     }
-                    is KtFunction -> resolvedChild.ComputeThreading()
-                    else -> null
-                }
-                if (threadTypes != null) {
-                    //todo go up the tree and see if we have any thread changing constructs; if so track it until our own function and see if the resulting one is ok.
-
-                }
-                if (threadTypes != null && !thisThreading.isValidFor(threadTypes)) {
-                    holder.registerProblem(exp, "Invalid threading for this expression")
+                    //if we did not exit then we have "NO" context changes , thus we are to look at the caller function
+                    if (thisThreading.isInValidFor(threadTypes) && !haveReportedIssue) {
+                        holder.registerProblem(exp, threadTypes.computeErrorMessageToThis())
+                    }
                 }
             }
-
         }
     }
+}
+
+fun Threading.computeErrorMessageToThis(): String {
+    return if (isUiThreaded) {
+        "Tries to run UI code from the background"
+    } else {
+        "Tries to run Background code from UI code"
+    }
+}
+
+fun KtClassOrObject.computeAnnotatedContext(extMan: ExternalAnnotationsManager): Threading? {
+    //look for specific annotations
+    val classAnnotations = resolveAllClassAnnotations(extMan)
+    return classAnnotations.computeAnnotationContext()
+}
+
+fun List<UAnnotation>.computeAnnotationContext(): Threading? {
+    forEach {
+        if (it.qualifiedName in uiContextNames) {
+            return Threading.uiThreaded
+        }
+        if (it.qualifiedName in backgroundContextNames) {
+            return Threading.backgroundThreaded
+        }
+    }
+    return null
+}
+
+/**
+ * Computes if this is a "thread" changing construct.
+ * // android is like "runOnUiThread"
+ *      functions like "post" on a view (post, postDelayed, postOnAnimation, postOnAnimationDelayed)
+ *        states that the user should be on the UI thread to begin with but eg
+ *        https://developer.android.com/guide/components/processes-and-threads#WorkerThreads
+ *        states otherwise.
+ *    there is also the AsyncTask. (https://developer.android.com/reference/android/os/AsyncTask.html#the-4-steps)
+ *      - onPreExecute(), invoked on the UI
+ *      - doInBackground(Params...) invoked on the background
+ *      - onProgressUpdate(Progress...), (called via publishProgress(AnyThread)) invokes on the ui.
+ *      - onPostExecute(Result), invoked on the UI thread
+ *
+ *    //the handler part is quite complex, as that is "Messaging".. but again that is "AnyThread".
+ *
+ *
+ *  also requries to look at other types of annotations....
+ *    //todo requires a test of this.
+ *
+ *
+ * // coroutines is
+ *  - launch(Dispatchers.Main){
+ *  - async(Dispatchers.Main)
+ * // javafx is
+ *      - Platform.runLater
+ *      - Task
+ *      - Service
+ *      --see https://www.developer.com/java/data/multithreading-in-javafx.html
+ * // swing is
+ *          - SwingUtilities.invokeLater
+ * // java:
+ *  - "Thread" (constructor, and classes inheriting and annoynumus classes) [changes to a background thread]
+ *
+ *  //swt
+ *      - Display.getDefault().asyncExec
+ *      - Display.getDefault().syncExec(
+ *      //see https://www.javalobby.org//java/forums/t43753.html
+ *
+ */
+
+private val uiContextNames = setOf(
+        "csense.kotlin.annotations.threading.InUiContext"
+)
+private val backgroundContextNames = setOf(
+        "csense.kotlin.annotations.threading.InBackgroundContext"
+)
+
+private val toUiThreadFunctionNames = setOf(
+        //android
+        "android.app.Activity.runOnUiThread", //to ui
+        "android.view.View.post",//to ui
+        "android.view.View.postDelayed",//to ui
+        "android.view.View.postOnAnimation",//to ui
+        "android.view.View.postOnAnimationDelayed", //to ui
+        //java fx
+        "javafx.application.Platform.runLater", //to ui
+        //swing
+        "javax.swing.SwingUtilities.invokeLater", //to ui
+        "org.eclipse.swt.widgets.Display.asyncExec", //to ui
+        "org.eclipse.swt.widgets.Display.syncExec" //to ui
+)
+
+private val contextChangeToBackgroundNames = setOf(
+        "java.lang.Thread"
+)
+
+private data class ContextChangeNameToType(
+        val mainThreadNames: Set<String>,
+        val otherTypeNames: Set<String>)
+
+private val kotlinCoroutineContextNames = ContextChangeNameToType(
+        setOf("Main", "Dispatchers.Main"),
+        setOf(
+                "IO", "Dispatchers.IO",
+                "Default", "Dispatchers.Default",
+                "Unconfined", "Dispatchers.Unconfined"))
+
+private val contextChangeParameter = setOf(
+        "kotlinx.coroutines.launch",
+        "kotlinx.coroutines.async",
+        "kotlinx.coroutines.withContext"
+)
+
+//if we go from x to a background thread / worker thread
+fun PsiElement.isInbuiltThreadChangeToBackground(): Boolean {
+    if (this is KtCallExpression) {
+        val psi = this.resolvePsi() ?: return false
+        return when (psi) {
+            is KtLightMethod -> psi.getKotlinFqNameString() in contextChangeToBackgroundNames
+            is KtNamedFunction -> psi.getKotlinFqNameString() in contextChangeToBackgroundNames
+            is PsiMethod -> psi.getKotlinFqNameString() in contextChangeToBackgroundNames
+            else -> false
+        }
+    }
+    return false
+}
+
+fun PsiElement.isInbuiltThreadChangeToUI(): Boolean {
+    if (this is KtCallExpression) {
+        val psi = this.resolvePsi() ?: return false
+        return when (psi) {
+            is KtLightMethod -> psi.getKotlinFqNameString() in toUiThreadFunctionNames
+            is KtNamedFunction -> psi.getKotlinFqNameString() in toUiThreadFunctionNames
+            is PsiMethod -> psi.getKotlinFqNameString() in toUiThreadFunctionNames
+            else -> false
+        }
+    }
+    return false
+}
+
+/**
+ * Computes whenever we are in a thread change, and if what is the resulting threading.
+ * @receiver PsiElement
+ * @return Threading? null if not a thread changing construct, or the resulting threading.
+ */
+fun PsiElement.computeThreadingFromTo(): Threading? {
+    if (this.isInbuiltThreadChangeToUI()) {
+        return Threading.uiThreaded
+    }
+    if (this.isInbuiltThreadChangeToBackground()) {
+        return Threading.backgroundThreaded
+    }
+    return this.computeInBuiltThreadingChange()
+}
+
+fun PsiElement.computeInBuiltThreadingChange(): Threading? {
+    if (this is KtCallExpression) {
+        val psi = this.resolvePsi() ?: return null
+
+        val isCorountine = when (psi) {
+            is KtLightMethod -> psi.getKotlinFqNameString() in contextChangeParameter
+            is KtNamedFunction -> psi.getKotlinFqNameString() in contextChangeParameter
+            is PsiMethod -> psi.getKotlinFqNameString() in contextChangeParameter
+            else -> false
+        }
+        if (!isCorountine) {
+            return null
+        }
+        //analyze first param
+        val firstName = valueArguments.firstOrNull()?.text ?: return null
+        //we have no clue ??
+        return when (firstName) {
+            in kotlinCoroutineContextNames.mainThreadNames ->
+                Threading.uiThreaded
+            in kotlinCoroutineContextNames.otherTypeNames ->
+                Threading.backgroundThreaded
+            else -> null
+        }
+    }
+    return null
+}
+
+inline fun PsiElement.goUpUntil(parent: PsiElement, action: Function0<PsiElement>) {
+    var current: PsiElement? = this.parent
+    while (current != null && current != parent) {
+        action(current)
+        current = current.parent
+    }
+}
+
+fun List<UAnnotation>.computeThreading(): Threading? {
+    val background = computeIsAnyBackgroundThread()
+    val ui = computeIsUiThread()
+    if (!ui && !background) {
+        return null
+    }
+    return Threading(background, ui)
+}
+
+fun List<UAnnotation>.computeIsAnyBackgroundThread(): Boolean = any {
+    it.qualifiedName in backgroundThreadNames
+}
+
+fun List<UAnnotation>.computeIsUiThread(): Boolean = any {
+    it.qualifiedName in uiAnnotationsNames
 }
 
 fun KtCallExpression.resolvePsi(): PsiElement? {
@@ -112,63 +334,95 @@ fun KtCallExpression.resolvePsi(): PsiElement? {
             ?: getCalleeExpressionIfAny()?.resolveMainReferenceToDescriptors()?.firstOrNull()?.findPsi() ?: return null
 }
 
-fun KtFunction.ComputeThreading(): Threading = Threading(isAnyThreaded(), isUiThreaded())
+fun KtFunction.computeThreading(extLookup: ExternalAnnotationsManager): Threading? {
+    val annotations = resolveAllMethodAnnotations(extLookup)
+    return annotations.computeThreading()
+}
 
-fun PsiMethod.ComputeThreading(extLookup: ExternalAnnotationsManager): Threading = Threading(
-        isAnyThreaded(extLookup),
-        isUiThreaded(extLookup))
+fun PsiMethod.computeThreading(extLookup: ExternalAnnotationsManager): Threading? {
+    val annotations = resolveAllMethodAnnotations(extLookup)
+    return annotations.computeThreading()
+}
 
-data class Threading(val isAnyThreaded: Boolean, val isUiThreaded: Boolean)
+data class Threading(val isBackgroundThreaded: Boolean, val isUiThreaded: Boolean) {
+    companion object {
+        val uiThreaded = Threading(
+                isBackgroundThreaded = false,
+                isUiThreaded = true)
+        val backgroundThreaded = Threading(
+                isBackgroundThreaded = true,
+                isUiThreaded = false)
+    }
+}
 
 /**
  * If this is an invalid threading setting.
  * @receiver Threading
  * @return Boolean
  */
-fun Threading.isInvalid(): Boolean = this.isUiThreaded && this.isAnyThreaded
+fun Threading.isInvalid(): Boolean = this.isUiThreaded && this.isBackgroundThreaded
 
+fun Threading.isInValidFor(other: Threading): Boolean = !isValidFor(other)
 fun Threading.isValidFor(other: Threading): Boolean {
-    if (this.isAnyThreaded && other.isUiThreaded) {
-        return false
-    }
-//    if (this.isUiThreaded)
-    return true
-    //may ui call any ? hmm
-
-}
-
-fun KtFunction.isUiThreaded(): Boolean = annotationEntries.any { it.shortName?.asString() in uiAnnotationsNames }
-
-fun KtFunction.isAnyThreaded(): Boolean = annotationEntries.any { it.shortName?.asString() in otherThreadNames }
-
-fun PsiMethod.isUiThreaded(extLookup: ExternalAnnotationsManager): Boolean = isInAny(extLookup, uiAnnotationsNames)
-
-fun PsiMethod.isAnyThreaded(extLookup: ExternalAnnotationsManager): Boolean = isInAny(extLookup, otherThreadNames)
-
-fun PsiMethod.isInAny(extLookup: ExternalAnnotationsManager, of: Set<String>): Boolean {
-    val haveOwnAnnotations = annotations.any {
-        it.qualifiedName in of
-    }
-    if (haveOwnAnnotations) {
-        return true
-    }
-    val externalAnnotations = extLookup.findExternalAnnotations(this) ?: return false
-    return externalAnnotations.any {
-        of.contains(it.nameReferenceElement?.referenceName)
+    return when {
+        //if any is invalid the whole result is invalid.
+        this.isInvalid() || other.isInvalid() -> false
+        //any thing mixed with any thread is "ok"
+        this.isAnyThread || other.isAnyThread -> true
+        //same type => ok
+        this.isUiThreaded && !this.isBackgroundThreaded -> {
+            other.isUiThreaded && !other.isBackgroundThreaded
+        }
+        //same type => ok
+        this.isBackgroundThreaded && !this.isUiThreaded -> {
+            other.isBackgroundThreaded && !other.isUiThreaded
+        }
+        //any kind of mixing.
+        else -> false
     }
 }
 
-val otherThreadNames = setOf(
-        "AnyThread",//csense
-        "AnyThread" //https://androidx.tech/artifacts/annotation/annotation/1.0.2-source/androidx/annotation/AnyThread.java.html
+/**
+ * If not annotated with ui or background it can just be "any" thread.
+ */
+val Threading.isAnyThread: Boolean
+    get() = !this.isBackgroundThreaded && !this.isUiThreaded
+
+
+//fun KtFunction.isUiThreaded(): Boolean = annotationEntries.any { it.shortName?.asString() in uiAnnotationsNames }
+//
+//fun KtFunction.isBackgroundThreaded(): Boolean = annotationEntries.any { it.shortName?.asString() in backgroundThreadNames }
+//
+//fun PsiMethod.isUiThreaded(extLookup: ExternalAnnotationsManager): Boolean =
+//        isInAny(extLookup, uiAnnotationsNames)
+//
+//fun PsiMethod.isBackgroundThreaded(extLookup: ExternalAnnotationsManager): Boolean =
+//        isInAny(extLookup, backgroundThreadNames)
+//
+//fun PsiMethod.isInAny(extLookup: ExternalAnnotationsManager, of: Set<String>): Boolean {
+//    val haveOwnAnnotations = annotations.any {
+//        it.qualifiedName in of
+//    }
+//    if (haveOwnAnnotations) {
+//        return true
+//    }
+//    val externalAnnotations = extLookup.findExternalAnnotations(this) ?: return false
+//    return externalAnnotations.any {
+//        of.contains(it.nameReferenceElement?.referenceName)
+//    }
+//}
+//old annotations for android - https://developer.android.com/reference/android/support/annotation/package-summary.html
+val backgroundThreadNames = setOf(
+        "csense.kotlin.annotations.threading.BackgroundThread",//csense //TODO remove
+        "csense.kotlin.annotations.threading.InBackground",//csense
+        "android.support.annotation.WorkerThread",
+        "androidx.annotation.WorkerThread" //https://androidx.tech/artifacts/annotation/annotation/1.0.2-source/androidx/annotation/WorkerThread.java.html
 )
 
 val uiAnnotationsNames = setOf(
-        "InUi",  //csense
-        "UiThread" //https://androidx.tech/artifacts/annotation/annotation/1.0.2-source/androidx/annotation/UiThread.java.html
+        "csense.kotlin.annotations.threading.InUi",  //csense
+        "androidx.annotation.UiThread", //https://androidx.tech/artifacts/annotation/annotation/1.0.2-source/androidx/annotation/UiThread.java.html
+        "androidx.annotation.MainThread", //https://androidx.tech/artifacts/annotation/annotation/1.0.2-source/androidx/annotation/MainThread.java.html
+        "android.support.annotation.UiThread",
+        "android.support.annotation.MainThread"
 )
-
-fun KtNameReferenceExpression.findPsi(): PsiElement? {
-    val referre = this.resolveMainReferenceToDescriptors().firstOrNull() ?: return null
-    return referre.findPsi()
-}

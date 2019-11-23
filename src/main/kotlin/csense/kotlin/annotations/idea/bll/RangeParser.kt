@@ -6,6 +6,9 @@ import org.jetbrains.uast.UAnnotation
 import org.jetbrains.uast.UExpression
 import org.jetbrains.uast.namePsiElement
 import org.jetbrains.uast.toUElementOfType
+//TODO parse / use
+//https://github.com/JetBrains/java-annotations/blob/master/java8/src/main/java/org/jetbrains/annotations/Range.java
+// and the android editions. from both packages (androidx.annotations & android.support.annotation)
 
 //Only assumtion: from and to
 sealed class RangeParser<T>(

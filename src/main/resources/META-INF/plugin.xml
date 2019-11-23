@@ -21,9 +21,13 @@
     <!--  Ability to annotate externally.  -->
     <extensions defaultExtensionNs="com.intellij">
         <java.externalAnnotation
-                implementation="csense.kotlin.annotations.idea.externalAnnotations.AnyThreadExternalAnnotation"/>
+                implementation="csense.kotlin.annotations.idea.externalAnnotations.InBackgroundExternalAnnotation"/>
         <java.externalAnnotation
                 implementation="csense.kotlin.annotations.idea.externalAnnotations.InUIExternalAnnotation"/>
+        <java.externalAnnotation
+                implementation="csense.kotlin.annotations.idea.externalAnnotations.InBackgroundContextExternalAnnotation"/>
+        <java.externalAnnotation
+                implementation="csense.kotlin.annotations.idea.externalAnnotations.InUiContextExternalAnnotation"/>
 
     </extensions>
 
