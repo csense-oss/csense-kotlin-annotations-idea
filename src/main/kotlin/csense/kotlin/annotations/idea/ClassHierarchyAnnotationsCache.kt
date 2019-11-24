@@ -1,9 +1,9 @@
 package csense.kotlin.annotations.idea
 
 import com.intellij.codeInsight.ExternalAnnotationsManager
+import com.intellij.psi.PsiClass
+import csense.kotlin.annotations.idea.psi.computeSuperAnnotations
 import csense.kotlin.annotations.idea.psi.resolveAllClassAnnotations
-import org.jetbrains.kotlin.idea.references.resolveMainReferenceToDescriptors
-import org.jetbrains.kotlin.js.resolve.diagnostics.findPsi
 import org.jetbrains.kotlin.psi.KtClassOrObject
 import org.jetbrains.uast.UAnnotation
 import org.jetbrains.uast.UClass
@@ -21,45 +21,31 @@ object ClassHierarchyAnnotationsCache {
      * @return List<UAnnotation>
      */
     fun getClassHierarchyAnnotaions(
-            clazz: KtClassOrObject?,
+            clazz: UClass?,
             extManager: ExternalAnnotationsManager): List<UAnnotation> {
         if (clazz == null) {
             return emptyList()
         }
-        val superClz = clazz.superClass
+        val superClz = clazz.javaPsi.superClass?.toUElementOfType<UClass>()
+                ?: return clazz.resolveAllClassAnnotations(extManager)
         val superCache = superTypeLookup[superClz]
         val superAnnotations: List<UAnnotation> = superCache
                 ?: clazz.computeSuperAnnotations(extManager).also {
-                    println("computed super annotations anew")
-                    superClz?.let { superClz -> superTypeLookup[superClz] = it }
+                    superTypeLookup[superClz] = it
                 }
 
         val myAnnotations = clazz.resolveAllClassAnnotations(extManager)
         return myAnnotations + superAnnotations
     }
-}
-
-fun KtClassOrObject.computeSuperAnnotations(extManager: ExternalAnnotationsManager): List<UAnnotation> {
-    val annotations = mutableListOf<UAnnotation>()
-    var currentSuper = superClass
-    while (currentSuper != null) {
-        annotations += currentSuper.resolveAllClassAnnotations(extManager)
-        currentSuper = currentSuper.javaPsi.superClass?.toUElementOfType()
+    fun getClassHierarchyAnnotaions(
+            clazz: KtClassOrObject?,
+            extManager: ExternalAnnotationsManager): List<UAnnotation> {
+        return getClassHierarchyAnnotaions(clazz?.toUElementOfType<UClass>(),extManager)
     }
-    return annotations
-}
 
-
-val KtClassOrObject.superClass: UClass?
-    get() {
-        val superTypes = superTypeListEntries
-        if (superTypes.isEmpty()) {
-            return null
-        }
-        superTypes.forEach {
-            val realClass = it.typeAsUserType?.referenceExpression?.resolveMainReferenceToDescriptors()
-                    ?.firstOrNull()?.containingDeclaration?.findPsi()
-            return realClass?.toUElementOfType<UClass>()
-        }
-        return null
+    fun getClassHierarchyAnnotaions(
+            clazz: PsiClass?,
+            extManager: ExternalAnnotationsManager): List<UAnnotation> {
+        return getClassHierarchyAnnotaions(clazz?.toUElementOfType<UClass>(),extManager)
     }
+}

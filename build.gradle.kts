@@ -23,14 +23,26 @@ repositories {
 }
 
 dependencies {
-    implementation("csense.kotlin:csense-kotlin-jvm:0.0.24")
-    implementation("csense.kotlin:csense-kotlin-annotations-jvm:0.0.6")
+    implementation("csense.kotlin:csense-kotlin-jvm:0.0.25")
+    implementation("csense.kotlin:csense-kotlin-annotations-jvm:0.0.7")
     implementation("csense.kotlin:csense-kotlin-ds-jvm:0.0.24")
 }
 
 tasks.getByName<org.jetbrains.intellij.tasks.PatchPluginXmlTask>("patchPluginXml") {
     changeNotes("""
-      - first release
+      This is currently a very early release, and so do not expect it to be perfect.
+       
+      Currently it supports the following
+      <ul>
+        <li>Android runOnUiThread thread construct</li>
+        <li>Android annotations for ranges and threading (both support and android x libs)</li>
+        <li>Externally able to read annotations for some things (still needs improvement though)</li>
+        <li>Some Coroutines constructions are understood / analyzed (launch / async, withContext)</li>
+        <li>(SWING/AWT)SwingUtilities.invokeLater,(SWT)Display.syncExec,(JAVAFX) Platform.runLater,(ANDROID)android.view.View.post* are understood in changes from background to ui</li>
+        <li>Ranges (from csense, jetbrains,android) are parsed  analyzed(still needs improvement though)</li>
+        <li>Makes csense annotations available externally.(go to declaration in the library and then add annotation)</li>
+      </ul>
+      
       """)
 }
 
