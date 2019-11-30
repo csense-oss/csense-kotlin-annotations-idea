@@ -7,7 +7,9 @@ class InspectionProvider : InspectionToolProvider {
         return arrayOf(
                 QuickThreadingInspection::class.java,
                 QuickNumberRangeInspection::class.java,
-                QuickNumberRangeTypeValueInspection::class.java
+                QuickNumberRangeTypeValueInspection::class.java,
+                NoEscapeInspection::class.java,
+                NoEscapeAssigmentInspection::class.java
         )
     }
 }

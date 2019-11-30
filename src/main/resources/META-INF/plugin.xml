@@ -5,10 +5,10 @@
 
     <description><![CDATA[This plugin provides annotations based SA to help with
     <ul>
-         <li> external annotations</li>
+         <li>External annotations</li>
          <li>MPP capable annotations (all of the kotlin ecosystem)</li>
          <li>Threading</li>
-         <li> number ranges</li>
+         <li>Number ranges</li>
          <li>and more</li>
     </ul>
     <br/>
@@ -32,7 +32,10 @@
                 implementation="csense.kotlin.annotations.idea.externalAnnotations.InBackgroundContextExternalAnnotation"/>
         <java.externalAnnotation
                 implementation="csense.kotlin.annotations.idea.externalAnnotations.InUiContextExternalAnnotation"/>
-
+        <java.externalAnnotation
+                implementation="csense.kotlin.annotations.idea.externalAnnotations.InAnyExternalAnnotation"/>
+        <java.externalAnnotation
+                implementation="csense.kotlin.annotations.idea.externalAnnotations.NoEscapeExternalAnnotations"/>
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">
@@ -47,5 +50,5 @@
         <!-- Add your actions here -->
     </actions>
 
-    <idea-version since-build="182"/>
+    <idea-version since-build="192"/>
 </idea-plugin>

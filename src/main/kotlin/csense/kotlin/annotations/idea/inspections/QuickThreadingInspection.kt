@@ -211,11 +211,18 @@ private val toUiThreadFunctionNames = setOf(
         //swing
         "javax.swing.SwingUtilities.invokeLater", //to ui
         "org.eclipse.swt.widgets.Display.asyncExec", //to ui
-        "org.eclipse.swt.widgets.Display.syncExec" //to ui
+        "org.eclipse.swt.widgets.Display.syncExec", //to ui
+        //csense
+        "csense.kotlin.extensions.coroutines.launchMain",
+        "csense.kotlin.extensions.coroutines.asyncMain",
+        "csense.kotlin.extensions.coroutines.withContextMain"
 )
 
 private val contextChangeToBackgroundNames = setOf(
-        "java.lang.Thread.Thread"
+        "java.lang.Thread.Thread",
+        "csense.kotlin.extensions.coroutines.launchDefault",
+        "csense.kotlin.extensions.coroutines.asyncDefault",
+        "csense.kotlin.extensions.coroutines.withContextDefault"
 )
 
 private data class ContextChangeNameToType(

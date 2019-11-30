@@ -1,8 +1,6 @@
 package csense.kotlin.annotations.idea.psi
 
 import com.intellij.codeInsight.ExternalAnnotationsManager
-import org.jetbrains.kotlin.idea.references.resolveMainReferenceToDescriptors
-import org.jetbrains.kotlin.js.resolve.diagnostics.findPsi
 import org.jetbrains.kotlin.psi.KtClassOrObject
 import org.jetbrains.uast.UAnnotation
 import org.jetbrains.uast.UClass
@@ -22,17 +20,3 @@ fun UClass.computeSuperAnnotations(extManager: ExternalAnnotationsManager): List
     }
     return annotations
 }
-
-val KtClassOrObject.superClass: UClass?
-    get() {
-        val superTypes = superTypeListEntries
-        if (superTypes.isEmpty()) {
-            return null
-        }
-        superTypes.forEach {
-            val realClass = it.typeAsUserType?.referenceExpression?.resolveMainReferenceToDescriptors()
-                    ?.firstOrNull()?.containingDeclaration?.findPsi()
-            return realClass?.toUElementOfType()
-        }
-        return null
-    }
