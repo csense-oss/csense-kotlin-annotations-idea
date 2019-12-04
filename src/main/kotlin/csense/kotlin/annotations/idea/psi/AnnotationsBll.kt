@@ -1,10 +1,7 @@
 package csense.kotlin.annotations.idea.psi
 
 import com.intellij.codeInsight.ExternalAnnotationsManager
-import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiMethod
-import com.intellij.psi.PsiModifierListOwner
-import com.intellij.psi.PsiParameterList
+import com.intellij.psi.*
 import org.jetbrains.kotlin.asJava.classes.KtLightClass
 import org.jetbrains.kotlin.asJava.elements.KtLightMethod
 import org.jetbrains.kotlin.psi.*

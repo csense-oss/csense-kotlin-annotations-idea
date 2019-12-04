@@ -5,7 +5,7 @@ import com.intellij.codeInspection.ProblemsHolder
 import csense.kotlin.annotations.idea.Constants
 import org.jetbrains.kotlin.idea.inspections.AbstractKotlinInspection
 import org.jetbrains.kotlin.psi.KtVisitorVoid
-import org.jetbrains.kotlin.psi.callExpressionVisitor
+import org.jetbrains.kotlin.psi.parameterVisitor
 
 class NoEscapeInspection : AbstractKotlinInspection() {
     override fun getDisplayName(): String {
@@ -44,7 +44,7 @@ class NoEscapeInspection : AbstractKotlinInspection() {
         // - parsing as argument to function where its not marked NoEscape (as that means its allowed to escape) (semi difficult)
         // - for .let, apply ect we should inspect the lambda.. which can get quite tricky. (hard)
         // -
-        return callExpressionVisitor {
+        return parameterVisitor {
 
         }
     }

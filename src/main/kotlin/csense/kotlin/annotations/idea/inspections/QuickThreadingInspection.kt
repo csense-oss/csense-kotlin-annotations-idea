@@ -348,10 +348,6 @@ fun List<UAnnotation>.computeIsUiThread(): Boolean = any {
     it.qualifiedName in uiAnnotationsNames
 }
 
-fun KtCallExpression.resolvePsi(): PsiElement? {
-    return (this.toUElement() as? UResolvable)?.resolve()
-            ?: getCalleeExpressionIfAny()?.resolveMainReferenceToDescriptors()?.firstOrNull()?.findPsi() ?: return null
-}
 
 
 fun KtFunction.computeThreading(extLookup: ExternalAnnotationsManager): Threading? {
@@ -419,3 +415,10 @@ val uiAnnotationsNames = setOf(
         "android.support.annotation.UiThread",
         "android.support.annotation.MainThread"
 )
+
+
+//TODO remove
+fun KtCallExpression.resolvePsi(): PsiElement? {
+    return (this.toUElement() as? UResolvable)?.resolve()
+            ?: getCalleeExpressionIfAny()?.resolveMainReferenceToDescriptors()?.firstOrNull()?.findPsi() ?: return null
+}

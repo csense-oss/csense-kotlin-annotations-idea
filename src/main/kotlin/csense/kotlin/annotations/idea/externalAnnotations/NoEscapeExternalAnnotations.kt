@@ -2,7 +2,7 @@ package csense.kotlin.annotations.idea.externalAnnotations
 
 import com.intellij.psi.*
 
-class NoEscapeExternalAnnotations : MultiplePsiAnnotationProvider(name) {
+class NoEscapeExternalAnnotations : ExternalMultiplePsiAnnotationProvider(name) {
 
     companion object {
         val name: String = "csense.kotlin.annotations.sideEffect.NoEscape"

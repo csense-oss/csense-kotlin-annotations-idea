@@ -58,6 +58,7 @@ class QuickNumberRangeTypeValueInspection : AbstractKotlinInspection() {
     override fun buildVisitor(holder: ProblemsHolder,
                               isOnTheFly: Boolean): KtVisitorVoid {
         return annotationEntryVisitor {
+
             val asUAnnotation = it.toUElementOfType<UAnnotation>()
             if (asUAnnotation == null) {
                 val asList = listOf(it)

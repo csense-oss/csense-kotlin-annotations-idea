@@ -4,7 +4,7 @@ import com.intellij.codeInsight.externalAnnotation.AnnotationProvider
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiModifierListOwner
 
-abstract class MultiplePsiAnnotationProvider(private val name: String) : AnnotationProvider {
+abstract class ExternalMultiplePsiAnnotationProvider(private val name: String) : AnnotationProvider {
     override fun getName(project: Project?): String = name
 
     abstract fun isUsableForType(owner: PsiModifierListOwner?): Boolean

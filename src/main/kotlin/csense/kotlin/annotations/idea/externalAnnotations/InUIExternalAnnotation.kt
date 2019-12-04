@@ -3,7 +3,7 @@ package  csense.kotlin.annotations.idea.externalAnnotations
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiModifierListOwner
 
-class InUIExternalAnnotation : MultiplePsiAnnotationProvider(name) {
+class InUIExternalAnnotation : ExternalMultiplePsiAnnotationProvider(name) {
     companion object {
         val name = "csense.kotlin.annotations.threading.InUi"
     }
