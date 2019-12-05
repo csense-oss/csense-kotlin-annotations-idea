@@ -5,7 +5,8 @@ import com.intellij.codeInspection.InspectionToolProvider
 class InspectionProvider : InspectionToolProvider {
     override fun getInspectionClasses(): Array<Class<*>> {
         return arrayOf(
-                QuickThreadingInspection::class.java,
+//                QuickThreadingPropertyInspection::class.java,
+                QuickThreadingCallInspection::class.java,
                 QuickNumberRangeInspection::class.java,
                 QuickNumberRangeTypeValueInspection::class.java,
                 NoEscapeInspection::class.java,

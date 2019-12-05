@@ -2,10 +2,10 @@ package csense.kotlin.annotations.idea
 
 import com.intellij.codeInsight.ExternalAnnotationsManager
 import com.intellij.psi.PsiClass
-import csense.kotlin.annotations.idea.psi.computeSuperAnnotations
-import csense.kotlin.annotations.idea.psi.resolveAllClassAnnotations
+import csense.kotlin.annotations.idea.bll.MppAnnotation
+import csense.kotlin.annotations.idea.psi.computeSuperMppAnnotations
+import csense.kotlin.annotations.idea.psi.resolveAllClassMppAnnotation
 import org.jetbrains.kotlin.psi.KtClassOrObject
-import org.jetbrains.uast.UAnnotation
 import org.jetbrains.uast.UClass
 import org.jetbrains.uast.toUElementOfType
 import java.util.concurrent.ConcurrentHashMap
@@ -13,39 +13,57 @@ import java.util.concurrent.ConcurrentHashMap
 object ClassHierarchyAnnotationsCache {
 
 
-    private val superTypeLookup: ConcurrentHashMap<UClass, List<UAnnotation>> =
+    private val superTypeLookupUAst: ConcurrentHashMap<UClass, List<MppAnnotation>> =
+            ConcurrentHashMap(500)
+    private val superTypeAnnotationsQualifiedNamesLookupKt: ConcurrentHashMap<KtClassOrObject, List<MppAnnotation>> =
             ConcurrentHashMap(500)
 
     /**
      * Tries to resolve the given class's parents annotations..
      * @return List<UAnnotation>
      */
-    fun getClassHierarchyAnnotaions(
+    fun getClassHierarchyAnnotations(
             clazz: UClass?,
-            extManager: ExternalAnnotationsManager): List<UAnnotation> {
+            extManager: ExternalAnnotationsManager): List<MppAnnotation> {
         if (clazz == null) {
             return emptyList()
         }
         val superClz = clazz.javaPsi.superClass?.toUElementOfType<UClass>()
-                ?: return clazz.resolveAllClassAnnotations(extManager)
-        val superCache = superTypeLookup[superClz]
-        val superAnnotations: List<UAnnotation> = superCache
-                ?: clazz.computeSuperAnnotations(extManager).also {
-                    superTypeLookup[superClz] = it
+                ?: return clazz.resolveAllClassMppAnnotation(extManager)
+        val superCache = superTypeLookupUAst[superClz]
+        val superAnnotations: List<MppAnnotation> = superCache
+                ?: clazz.computeSuperMppAnnotations(extManager).also {
+                    superTypeLookupUAst[superClz] = it
                 }
 
-        val myAnnotations = clazz.resolveAllClassAnnotations(extManager)
+        val myAnnotations = clazz.resolveAllClassMppAnnotation(extManager)
         return myAnnotations + superAnnotations
     }
-    fun getClassHierarchyAnnotaions(
-            clazz: KtClassOrObject?,
-            extManager: ExternalAnnotationsManager): List<UAnnotation> {
-        return getClassHierarchyAnnotaions(clazz?.toUElementOfType<UClass>(),extManager)
+
+    fun getClassHierarchyAnnotations(
+            clazz: PsiClass?,
+            extManager: ExternalAnnotationsManager): List<MppAnnotation> {
+        return getClassHierarchyAnnotations(clazz?.toUElementOfType<UClass>(), extManager)
     }
 
-    fun getClassHierarchyAnnotaions(
-            clazz: PsiClass?,
-            extManager: ExternalAnnotationsManager): List<UAnnotation> {
-        return getClassHierarchyAnnotaions(clazz?.toUElementOfType<UClass>(),extManager)
+    fun getClassHierarchyAnnotations(
+            clazz: KtClassOrObject?,
+            extManager: ExternalAnnotationsManager
+    ): List<MppAnnotation> {
+        if (clazz == null) {
+            return emptyList()
+        }
+        val myAnnotations = clazz.resolveAllClassMppAnnotation(extManager)
+        val superClz: KtClassOrObject = clazz.firstChild as? KtClassOrObject
+                ?: return myAnnotations
+        val superCache = superTypeAnnotationsQualifiedNamesLookupKt[superClz]
+        val superAnnotations: List<MppAnnotation> = superCache
+                ?: clazz.resolveAllClassMppAnnotation(extManager).also {
+                    superTypeAnnotationsQualifiedNamesLookupKt[superClz] = it
+                }
+
+        return myAnnotations + superAnnotations
     }
+
+
 }

@@ -2,8 +2,10 @@ package csense.kotlin.annotations.idea.psi
 
 import com.intellij.codeInsight.ExternalAnnotationsManager
 import com.intellij.psi.*
+import csense.kotlin.annotations.idea.bll.*
 import org.jetbrains.kotlin.asJava.classes.KtLightClass
 import org.jetbrains.kotlin.asJava.elements.KtLightMethod
+import org.jetbrains.kotlin.asJava.toLightAnnotation
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.uast.UAnnotation
 import org.jetbrains.uast.toUElementOfType
@@ -42,6 +44,34 @@ fun PsiElement.resolveAllClassAnnotations(externalAnnotationsManager: ExternalAn
         emptyList()
     }
     return internal + external
+}
+
+
+fun PsiElement.resolveAllClassMppAnnotation(externalAnnotationsManager: ExternalAnnotationsManager? = null): List<MppAnnotation> {
+    val extManager = externalAnnotationsManager ?: ExternalAnnotationsManager.getInstance(project)
+    val internal = when (this) {
+        is KtLightClass -> annotations.mapNotNull { it.toMppAnnotation() }
+        is KtClass -> annotationEntries.mapNotNull { it.toMppAnnotation() }
+        is KtClassOrObject -> annotationEntries.mapNotNull { it.toMppAnnotation() }
+        else -> emptyList()
+    }
+    val external = if (this is PsiModifierListOwner) {
+        extManager.findExternalAnnotations(this)?.mapNotNull {
+            it.toMppAnnotation()
+        } ?: emptyList()
+    } else {
+        emptyList()
+    }
+    return internal + external
+}
+
+fun PsiElement.resolveAllMethodAnnotationMppAnnotation(externalAnnotationsManager: ExternalAnnotationsManager? = null): List<MppAnnotation> {
+    val extManager = externalAnnotationsManager ?: ExternalAnnotationsManager.getInstance(project)
+    val ownAnnotations = this.getItemMppAnnotations()
+    val external = (this as? PsiModifierListOwner)?.let {
+        extManager.findExternalAnnotations(it)?.toMppAnnotations()
+    } ?: emptyList()
+    return ownAnnotations + external
 }
 
 fun PsiElement.resolveAllParameterAnnotations(externalAnnotationsManager: ExternalAnnotationsManager? = null): List<List<UAnnotation>> {

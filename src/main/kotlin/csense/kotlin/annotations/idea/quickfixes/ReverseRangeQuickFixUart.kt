@@ -3,6 +3,7 @@ package csense.kotlin.annotations.idea.quickfixes
 import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemDescriptor
 import com.intellij.openapi.project.Project
+import csense.kotlin.annotations.idea.Constants
 import csense.kotlin.annotations.idea.bll.RangeParser
 import org.jetbrains.kotlin.idea.util.application.executeWriteCommand
 import org.jetbrains.kotlin.psi.KtAnnotationEntry
@@ -14,7 +15,7 @@ import org.jetbrains.uast.tryResolve
 class ReverseRangeQuickFixUart(
         val elements: List<UAnnotation?>) : LocalQuickFix {
 
-    override fun getFamilyName() = "csense kotlin annotations - swap range (from & to)"
+    override fun getFamilyName() = "${Constants.quickFixFamilyPrefix} swap range (from & to)"
     override fun getName(): String = "Swap range from and to"
 
     override fun applyFix(project: Project, descriptor: ProblemDescriptor) {
