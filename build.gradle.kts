@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "csense.kotlin"
-version = "0.3"
+version = "0.4"
 
 
 // See https://github.com/JetBrains/gradle-intellij-plugin/
