@@ -32,7 +32,7 @@ tasks.getByName<org.jetbrains.intellij.tasks.PatchPluginXmlTask>("patchPluginXml
     changeNotes("""
       Changes now involves
       <ul>
-        <li>More external annotations (and on more types)</li>
+        <li>Work on MPP & property access are now inspected as well.</li>
       </ul>
       """)
 }

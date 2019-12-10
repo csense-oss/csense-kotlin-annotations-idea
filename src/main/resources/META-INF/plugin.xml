@@ -36,6 +36,14 @@
                 implementation="csense.kotlin.annotations.idea.externalAnnotations.InAnyExternalAnnotation"/>
         <java.externalAnnotation
                 implementation="csense.kotlin.annotations.idea.externalAnnotations.NoEscapeExternalAnnotations"/>
+        <!-- Ability to annotate ranges externally  -->
+        <intentionAction>
+            <className>csense.kotlin.annotations.idea.externalAnnotations.ranges.DoubleLimitExternalAnnotations</className>
+        </intentionAction>
+        <intentionAction>
+            <className>csense.kotlin.annotations.idea.externalAnnotations.ranges.FloatLimitExternalAnnotations</className>
+        </intentionAction>
+
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">

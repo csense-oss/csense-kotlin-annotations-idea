@@ -3,6 +3,7 @@ package csense.kotlin.annotations.idea.psi
 import com.intellij.codeInsight.ExternalAnnotationsManager
 import com.intellij.psi.*
 import csense.kotlin.annotations.idea.bll.*
+import csense.kotlin.extensions.collections.getSafe
 import org.jetbrains.kotlin.asJava.classes.KtLightClass
 import org.jetbrains.kotlin.asJava.elements.KtLightMethod
 import org.jetbrains.kotlin.asJava.toLightAnnotation
@@ -100,5 +101,7 @@ fun PsiParameterList.getAllAnnotations(extManager: ExternalAnnotationsManager): 
         extManager.findExternalAnnotations(it)?.mapNotNull { it.toUElementOfType<UAnnotation>() }
                 ?: emptyList()
     }
-    return internal + external
+    return internal.mapIndexed { index: Int, list: List<UAnnotation> ->
+        list + (external.getSafe(index) ?: emptyList())
+    }
 }
