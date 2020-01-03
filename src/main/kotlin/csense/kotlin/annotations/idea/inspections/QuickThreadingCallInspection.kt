@@ -5,20 +5,20 @@ import com.intellij.codeInsight.ExternalAnnotationsManager
 import com.intellij.codeInspection.ProblemsHolder
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiMethod
+import csense.idea.base.UastKtPsi.getKotlinFqNameString
+import csense.idea.base.bll.psi.goUpUntil
+import csense.idea.base.mpp.MppAnnotation
+import csense.idea.base.mpp.resolveAllMethodAnnotationMppAnnotation
+import csense.idea.base.mpp.toMppAnnotations
 import csense.kotlin.Function0
 import csense.kotlin.annotations.idea.ClassHierarchyAnnotationsCache
 import csense.kotlin.annotations.idea.Constants
-import csense.kotlin.annotations.idea.bll.MppAnnotation
-import csense.kotlin.annotations.idea.bll.getKotlinFqNameString
-import csense.kotlin.annotations.idea.bll.toMppAnnotations
-import csense.kotlin.annotations.idea.psi.resolveAllMethodAnnotationMppAnnotation
 import csense.kotlin.extensions.map
 import org.jetbrains.kotlin.asJava.elements.KtLightMethod
 import org.jetbrains.kotlin.idea.inspections.AbstractKotlinInspection
 import org.jetbrains.kotlin.idea.references.resolveMainReferenceToDescriptors
 import org.jetbrains.kotlin.js.resolve.diagnostics.findPsi
 import org.jetbrains.kotlin.psi.*
-import org.jetbrains.kotlin.psi.psiUtil.containingClass
 import org.jetbrains.kotlin.psi.psiUtil.containingClassOrObject
 import org.jetbrains.kotlin.psi.psiUtil.forEachDescendantOfType
 import org.jetbrains.kotlin.resolve.calls.callUtil.getCalleeExpressionIfAny
@@ -379,14 +379,6 @@ fun PsiElement.computeInBuiltThreadingChange(): Threading? {
     return null
 }
 
-inline fun PsiElement.goUpUntil(parent: PsiElement, action: Function0<PsiElement>) {
-    var current: PsiElement? = this.parent
-    while (current != null && current != parent) {
-        action(current)
-        current = current.parent
-    }
-}
-
 fun List<MppAnnotation>.computeThreading(): Threading? = when {
     computeIsBackgroundThread() -> Threading.BackgroundThreaded
     computeIsUiThread() -> Threading.UIThreaded
@@ -416,17 +408,6 @@ fun KtProperty.computeThreading(extLookup: ExternalAnnotationsManager): Threadin
     val annotations = annotationEntries.toMppAnnotations()
     return annotations.computeThreading()
 }
-//
-//data class Threading(val isBackgroundThreaded: Boolean, val isUiThreaded: Boolean) {
-//    companion object {
-//        val uiThreaded = Threading(
-//                isBackgroundThreaded = false,
-//                isUiThreaded = true)
-//        val backgroundThreaded = Threading(
-//                isBackgroundThreaded = true,
-//                isUiThreaded = false)
-//    }
-//}
 
 enum class Threading {
     UIThreaded,
@@ -483,7 +464,7 @@ val anyThreadedNames = setOf(
 )
 
 
-//TODO remove for base lib.
+//TODO remove for base lib.(0.0.8)
 fun KtReferenceExpression.resolvePsi(): PsiElement? {
     return (this.toUElement() as? UResolvable)?.resolve()
             ?: getCalleeExpressionIfAny()?.resolveMainReferenceToDescriptors()?.firstOrNull()?.findPsi() ?: return null

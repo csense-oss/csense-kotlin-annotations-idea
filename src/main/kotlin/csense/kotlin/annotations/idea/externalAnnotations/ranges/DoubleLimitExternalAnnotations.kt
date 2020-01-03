@@ -1,6 +1,7 @@
 package csense.kotlin.annotations.idea.externalAnnotations.ranges
 
 import com.intellij.psi.*
+import csense.idea.base.externalAnnotations.BaseExternalRangeAnnotation
 
 
 class DoubleLimitExternalAnnotations : BaseExternalRangeAnnotation<Double, Double>() {

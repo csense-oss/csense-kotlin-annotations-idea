@@ -2,15 +2,14 @@ package csense.kotlin.annotations.idea.inspections
 
 import com.intellij.codeHighlighting.HighlightDisplayLevel
 import com.intellij.codeInspection.ProblemsHolder
+import csense.idea.base.annotationss.resolveAllParameterAnnotations
+import csense.idea.base.bll.kotlin.isNumberType
 import csense.kotlin.annotations.idea.Constants
 import csense.kotlin.annotations.idea.bll.RangeParser
-import csense.kotlin.annotations.idea.psi.resolveAllParameterAnnotations
 import csense.kotlin.extensions.collections.getSafe
-import org.jetbrains.kotlin.idea.debugger.sequence.psi.resolveType
 import org.jetbrains.kotlin.idea.inspections.AbstractKotlinInspection
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.psi.psiUtil.anyDescendantOfType
-import org.jetbrains.kotlin.types.typeUtil.isPrimitiveNumberType
 import org.jetbrains.uast.UAnnotation
 
 
@@ -83,9 +82,4 @@ class QuickNumberRangeInspection : AbstractKotlinInspection() {
             }
         }
     }
-}
-
-
-fun KtConstantExpression.isNumberType(): Boolean {
-    return this.resolveType().isPrimitiveNumberType()
 }

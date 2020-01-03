@@ -3,6 +3,7 @@ package csense.kotlin.annotations.idea.quickfixes
 import com.intellij.codeInspection.LocalQuickFix
 import com.intellij.codeInspection.ProblemDescriptor
 import com.intellij.openapi.project.Project
+import com.intellij.util.IncorrectOperationException
 import csense.kotlin.annotations.idea.Constants
 import csense.kotlin.annotations.idea.bll.RangeParser
 import org.jetbrains.kotlin.idea.util.application.executeWriteCommand
@@ -32,8 +33,12 @@ class ReverseRangeQuickFixKt(
         }
         //swap args
         project.executeWriteCommand("swap args") {
-            values.first().replace(values.last().copy())
-            values.last().replace(values.first().copy())
+            try {
+                values.first().replace(values.last().copy())
+                values.last().replace(values.first().copy())
+            } catch (e: IncorrectOperationException) {
+                TODO("Add error handling here")
+            }
         }
     }
 

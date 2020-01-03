@@ -2,6 +2,7 @@ package csense.kotlin.annotations.idea.externalAnnotations
 
 import com.intellij.psi.PsiClass
 import com.intellij.psi.PsiModifierListOwner
+import csense.idea.base.externalAnnotations.ExternalMultiplePsiAnnotationProvider
 
 class InUiContextExternalAnnotation : ExternalMultiplePsiAnnotationProvider(name) {
     companion object {

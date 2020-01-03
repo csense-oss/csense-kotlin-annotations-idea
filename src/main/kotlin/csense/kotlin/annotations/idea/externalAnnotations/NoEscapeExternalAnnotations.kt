@@ -1,6 +1,7 @@
 package csense.kotlin.annotations.idea.externalAnnotations
 
 import com.intellij.psi.*
+import csense.idea.base.externalAnnotations.ExternalMultiplePsiAnnotationProvider
 
 class NoEscapeExternalAnnotations : ExternalMultiplePsiAnnotationProvider(name) {
 

@@ -1,5 +1,0 @@
-<root>
-    <item name='com.intellij.psi.PsiElement com.intellij.psi.PsiElement getParent()'>
-        <annotation name='org.jetbrains.annotations.Nullable'/>
-    </item>
-</root>

@@ -7,12 +7,11 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiField
 import com.intellij.psi.PsiMethod
 import com.intellij.psi.PsiModifierListOwner
-import com.intellij.psi.util.parentOfType
+import csense.idea.base.annotationss.resolveAllMethodAnnotations
+import csense.idea.base.annotationss.resolveAnnotationsKt
+import csense.idea.base.bll.kotlin.findParentOfType
 import csense.kotlin.annotations.idea.Constants
-import csense.kotlin.annotations.idea.psi.resolveAllMethodAnnotations
-import org.jetbrains.kotlin.codegen.coroutines.createMethodNodeForSuspendCoroutineUninterceptedOrReturn
 import org.jetbrains.kotlin.idea.inspections.AbstractKotlinInspection
-import org.jetbrains.kotlin.nj2k.nullabilityAnalysis.prepareTypeElementByMakingAllTypesNullable
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.uast.UAnnotation
 import org.jetbrains.uast.toUElementOfType
@@ -80,46 +79,8 @@ class NoEscapeAssigmentInspection : AbstractKotlinInspection() {
     }
 }
 
-inline fun <reified T> KtExpression.findParentOfType(limit: PsiElement? = null): T? {
-    var currentParent: PsiElement? = this
-    while (currentParent != null && currentParent != limit) {
-        if (currentParent is T) {
-            return currentParent
-        }
-        currentParent = currentParent.parent
-    }
-    return null
-}
-
 fun List<UAnnotation>.anyNoEscape(): Boolean {
     return any { it.qualifiedName in NoEscapeAnnotationsFqNames }
 }
-
-fun KtExpression.resolveAnnotationsKt(extManager: ExternalAnnotationsManager): List<UAnnotation> = when (this) {
-    is KtCallExpression -> resolvePsi()?.resolveAllMethodAnnotations(extManager)
-    is KtProperty -> (getter ?: initializer)?.resolveAllMethodAnnotations(extManager)?.plus(uAnnotaions())
-    is KtDotQualifiedExpression -> selectorExpression?.resolveAnnotationsKt(extManager)
-    is KtNameReferenceExpression -> this.references.firstOrNull()?.resolve()?.resolveAnnotations(extManager)
-    is KtNamedFunction -> resolveAllMethodAnnotations()
-    else -> emptyList()
-} ?: emptyList()
-
-fun PsiElement.resolveAnnotations(extManager: ExternalAnnotationsManager): List<UAnnotation> {
-    return when (this) {
-        is KtExpression -> resolveAnnotationsKt(extManager)
-        is PsiMethod -> resolveAllMethodAnnotations(extManager)
-        is PsiField -> this.uAnnotations()
-        else -> emptyList()
-    }
-}
-
-fun KtAnnotated.uAnnotaions(): List<UAnnotation> {
-    return annotationEntries.mapNotNull { it.toUElementOfType<UAnnotation>() }
-}
-
-fun PsiModifierListOwner.uAnnotations(): List<UAnnotation> {
-    return annotations.mapNotNull { it.toUElementOfType<UAnnotation>() }
-}
-
 
 val NoEscapeAnnotationsFqNames = setOf("csense.kotlin.annotations.sideEffect.NoEscape")

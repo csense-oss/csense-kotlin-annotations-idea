@@ -45,7 +45,7 @@ class NoEscapeInspection : AbstractKotlinInspection() {
         // - for .let, apply ect we should inspect the lambda.. which can get quite tricky. (hard)
         // -
         return parameterVisitor {
-
+            //TODO make me
         }
     }
 

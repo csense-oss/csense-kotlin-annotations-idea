@@ -2,9 +2,9 @@ package csense.kotlin.annotations.idea
 
 import com.intellij.codeInsight.ExternalAnnotationsManager
 import com.intellij.psi.PsiClass
-import csense.kotlin.annotations.idea.bll.MppAnnotation
-import csense.kotlin.annotations.idea.psi.computeSuperMppAnnotations
-import csense.kotlin.annotations.idea.psi.resolveAllClassMppAnnotation
+import csense.idea.base.bll.uast.computeSuperMppAnnotations
+import csense.idea.base.mpp.MppAnnotation
+import csense.idea.base.mpp.resolveAllClassMppAnnotation
 import org.jetbrains.kotlin.psi.KtClassOrObject
 import org.jetbrains.uast.UClass
 import org.jetbrains.uast.toUElementOfType
