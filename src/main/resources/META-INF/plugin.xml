@@ -1,15 +1,21 @@
 <idea-plugin>
     <id>csense-idea.csense-kotlin-annotations</id>
     <name>Csense kotlin annotations</name>
-    <vendor email="csenseoss@tvedesys.dk" url="http://www.tvedesys.dk/csenseoss">Csenseoss @ Tvedesys</vendor>
+    <vendor email="csenseoss@tvedesys.dk" url="http://www.tvedesys.dk/csenseoss">Csenseoss</vendor>
 
-    <description><![CDATA[This plugin provides annotations based SA to help with
+    <description><![CDATA[This plugin provides annotations based Statical analysis (SA) to help with
     <ul>
          <li>External annotations</li>
          <li>MPP capable annotations (all of the kotlin ecosystem)</li>
          <li>Threading</li>
          <li>Number ranges</li>
          <li>and more</li>
+    </ul>
+    It works with:
+    <ul>
+        <li>csense annotations</li>
+        <li>most android (support & X) annotations</li>
+        <li>some Jetbrains annotations</li>
     </ul>
     <br/>
     This is still an early WIP.

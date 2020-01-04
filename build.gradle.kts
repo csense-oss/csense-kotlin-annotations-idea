@@ -35,7 +35,10 @@ tasks.getByName<org.jetbrains.intellij.tasks.PatchPluginXmlTask>("patchPluginXml
       Changes now involves
       <ul>
         <li>Work on MPP & property access are now inspected as well.</li>
+        <li>A lot of bug fixing</li>
       </ul>
+      Nb this is Still quite early. 
+
       """)
 }
 
