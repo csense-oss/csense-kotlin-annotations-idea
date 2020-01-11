@@ -3,18 +3,12 @@ package csense.kotlin.annotations.idea.inspections
 import com.intellij.codeHighlighting.HighlightDisplayLevel
 import com.intellij.codeInsight.ExternalAnnotationsManager
 import com.intellij.codeInspection.ProblemsHolder
-import com.intellij.psi.PsiElement
-import com.intellij.psi.PsiField
-import com.intellij.psi.PsiMethod
-import com.intellij.psi.PsiModifierListOwner
-import csense.idea.base.annotationss.resolveAllMethodAnnotations
 import csense.idea.base.annotationss.resolveAnnotationsKt
-import csense.idea.base.bll.kotlin.findParentOfType
+import csense.idea.base.bll.psi.findParentOfType
 import csense.kotlin.annotations.idea.Constants
 import org.jetbrains.kotlin.idea.inspections.AbstractKotlinInspection
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.uast.UAnnotation
-import org.jetbrains.uast.toUElementOfType
 
 class NoEscapeAssigmentInspection : AbstractKotlinInspection() {
     override fun getDisplayName(): String {

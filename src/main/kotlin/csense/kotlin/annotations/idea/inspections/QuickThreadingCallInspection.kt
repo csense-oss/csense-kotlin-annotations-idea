@@ -7,11 +7,10 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiMethod
 import csense.idea.base.UastKtPsi.getKotlinFqNameString
 import csense.idea.base.bll.psi.goUpUntil
+import csense.idea.base.cache.ClassHierarchyAnnotationsCache
 import csense.idea.base.mpp.MppAnnotation
 import csense.idea.base.mpp.resolveAllMethodAnnotationMppAnnotation
 import csense.idea.base.mpp.toMppAnnotations
-import csense.kotlin.Function0
-import csense.kotlin.annotations.idea.ClassHierarchyAnnotationsCache
 import csense.kotlin.annotations.idea.Constants
 import csense.kotlin.extensions.map
 import org.jetbrains.kotlin.asJava.elements.KtLightMethod

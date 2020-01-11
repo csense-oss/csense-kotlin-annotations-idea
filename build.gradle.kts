@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "csense.kotlin"
-version = "0.6.1"
+version = "0.6.2"
 
 
 // See https://github.com/JetBrains/gradle-intellij-plugin/
@@ -25,20 +25,17 @@ repositories {
 
 dependencies {
     implementation("csense.kotlin:csense-kotlin-jvm:0.0.29")
-    implementation("csense.kotlin:csense-kotlin-annotations-jvm:0.0.14")
+    implementation("csense.kotlin:csense-kotlin-annotations-jvm:0.0.15")
     implementation("csense.kotlin:csense-kotlin-ds-jvm:0.0.24")
-    implementation("csense.idea.base:csense-idea-base:0.0.7")
+    implementation("csense.idea.base:csense-idea-base:0.0.8")
 }
 
 tasks.getByName<org.jetbrains.intellij.tasks.PatchPluginXmlTask>("patchPluginXml") {
     changeNotes("""
       Changes now involves
       <ul>
-        <li>Work on MPP & property access are now inspected as well.</li>
-        <li>A lot of bug fixing</li>
+        <li>ParameterLessConstructor supported</li>
       </ul>
-      Nb this is Still quite early. 
-
       """)
 }
 

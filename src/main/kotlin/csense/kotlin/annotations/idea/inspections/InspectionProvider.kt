@@ -10,7 +10,8 @@ class InspectionProvider : InspectionToolProvider {
                 QuickNumberRangeInspection::class.java,
                 QuickNumberRangeTypeValueInspection::class.java,
                 NoEscapeInspection::class.java,
-                NoEscapeAssigmentInspection::class.java
+                NoEscapeAssigmentInspection::class.java,
+                ParameterLessConstructorInspection::class.java
         )
     }
 }
