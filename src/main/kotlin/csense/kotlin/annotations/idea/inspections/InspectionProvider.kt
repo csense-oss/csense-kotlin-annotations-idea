@@ -11,7 +11,8 @@ class InspectionProvider : InspectionToolProvider {
                 QuickNumberRangeTypeValueInspection::class.java,
                 NoEscapeInspection::class.java,
                 NoEscapeAssigmentInspection::class.java,
-                ParameterLessConstructorInspection::class.java
+                ParameterLessConstructorRequriedInspection::class.java,
+                SuperCallRequiredInspection::class.java
         )
     }
 }

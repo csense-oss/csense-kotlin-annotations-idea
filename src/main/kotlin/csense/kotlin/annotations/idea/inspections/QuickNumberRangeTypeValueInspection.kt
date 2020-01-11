@@ -63,8 +63,10 @@ class QuickNumberRangeTypeValueInspection : AbstractKotlinInspection() {
             if (asUAnnotation == null) {
                 val asList = listOf(it)
                 val type = RangeParser.parseKt(asList) ?: return@annotationEntryVisitor
-                val isRightType = (it as? KtParameter)?.let { type.verifyTypeName(it) }
-                if (isRightType != null && !isRightType) {
+                val isAnyWrongType = it.valueArguments.any { valueArg ->
+                    valueArg.getArgumentExpression()?.let { parm -> !type.verifyTypeName(parm) } ?: false
+                }
+                if (isAnyWrongType) {
                     holder.registerProblem(it, "WRONG RANGE TYPE")
                     return@annotationEntryVisitor
                 }
@@ -83,8 +85,10 @@ class QuickNumberRangeTypeValueInspection : AbstractKotlinInspection() {
             } else {
                 val asList = listOf(asUAnnotation)
                 val type = RangeParser.parse(asList) ?: return@annotationEntryVisitor
-                val isRightType = (it as? KtParameter)?.let { type.verifyTypeName(it) }
-                if (isRightType != null && !isRightType) {
+                val isAnyWrongType = it.valueArguments.any { valueArg ->
+                    valueArg.getArgumentExpression()?.let { parm -> !type.verifyTypeName(parm) } ?: false
+                }
+                if (isAnyWrongType) {
                     holder.registerProblem(it, "WRONG RANGE TYPE")
                     return@annotationEntryVisitor
                 }

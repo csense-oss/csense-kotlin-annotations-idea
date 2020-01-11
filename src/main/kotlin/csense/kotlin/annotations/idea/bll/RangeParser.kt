@@ -1,7 +1,14 @@
 package csense.kotlin.annotations.idea.bll
 
+import csense.idea.base.bll.kotlin.isConstant
 import csense.kotlin.annotations.idea.inspections.*
+import org.jetbrains.kotlin.idea.analysis.analyzeInContext
+import org.jetbrains.kotlin.idea.caches.resolve.analyze
+import org.jetbrains.kotlin.js.descriptorUtils.nameIfStandardType
 import org.jetbrains.kotlin.psi.*
+import org.jetbrains.kotlin.resolve.BindingContext
+import org.jetbrains.kotlin.resolve.calls.callUtil.getType
+import org.jetbrains.kotlin.resolve.lazy.BodyResolveMode
 import org.jetbrains.uast.UAnnotation
 import org.jetbrains.uast.UExpression
 import org.jetbrains.uast.namePsiElement
@@ -193,6 +200,12 @@ sealed class RangeParser<T>(
     fun verifyTypeName(param: KtParameter): Boolean {
         val paramTypeName = param.typeReference?.text
         return this.typeName == paramTypeName
+    }
+
+    fun verifyTypeName(param: KtExpression): Boolean {
+        val bindingContext = param.analyze(BodyResolveMode.PARTIAL)
+        val type =  param.getType(bindingContext)?.nameIfStandardType?.asString()
+        return this.typeName == type
     }
 
     fun findAnnotation(elements: List<UAnnotation?>): UAnnotation? =

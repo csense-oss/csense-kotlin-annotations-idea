@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "csense.kotlin"
-version = "0.6.2"
+version = "0.6.3"
 
 
 // See https://github.com/JetBrains/gradle-intellij-plugin/
@@ -27,14 +27,16 @@ dependencies {
     implementation("csense.kotlin:csense-kotlin-jvm:0.0.29")
     implementation("csense.kotlin:csense-kotlin-annotations-jvm:0.0.15")
     implementation("csense.kotlin:csense-kotlin-ds-jvm:0.0.24")
-    implementation("csense.idea.base:csense-idea-base:0.0.8")
+    implementation("csense.idea.base:csense-idea-base:0.1.2")
 }
 
 tasks.getByName<org.jetbrains.intellij.tasks.PatchPluginXmlTask>("patchPluginXml") {
     changeNotes("""
       Changes now involves
       <ul>
-        <li>ParameterLessConstructor supported</li>
+        <li>ParameterLessConstructor annotation supported</li>
+        <li>SuperCall / superCallRequired annotation supported</li>
+        <li>Fixed analyzing of types for ranges</li>
       </ul>
       """)
 }

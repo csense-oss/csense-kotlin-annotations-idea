@@ -9,7 +9,7 @@ import org.jetbrains.kotlin.idea.inspections.AbstractKotlinInspection
 import org.jetbrains.kotlin.psi.KtVisitorVoid
 import org.jetbrains.kotlin.psi.classOrObjectVisitor
 
-class ParameterLessConstructorInspection : AbstractKotlinInspection() {
+class ParameterLessConstructorRequriedInspection : AbstractKotlinInspection() {
     override fun getDisplayName(): String {
         return "ParameterLessConstructorInspection"
     }
