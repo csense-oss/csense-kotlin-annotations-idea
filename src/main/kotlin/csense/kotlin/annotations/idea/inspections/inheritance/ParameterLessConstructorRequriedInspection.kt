@@ -1,4 +1,4 @@
-package csense.kotlin.annotations.idea.inspections
+package csense.kotlin.annotations.idea.inspections.inheritance
 
 import com.intellij.codeHighlighting.HighlightDisplayLevel
 import com.intellij.codeInsight.ExternalAnnotationsManager

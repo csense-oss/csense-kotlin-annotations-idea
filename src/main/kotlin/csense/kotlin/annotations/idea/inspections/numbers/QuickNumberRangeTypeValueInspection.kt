@@ -1,4 +1,4 @@
-package csense.kotlin.annotations.idea.inspections
+package csense.kotlin.annotations.idea.inspections.numbers
 
 import com.intellij.codeHighlighting.HighlightDisplayLevel
 import com.intellij.codeInspection.LocalQuickFix
@@ -9,7 +9,6 @@ import csense.kotlin.annotations.idea.quickfixes.ReverseRangeQuickFixKt
 import csense.kotlin.annotations.idea.quickfixes.ReverseRangeQuickFixUart
 import csense.kotlin.extensions.mapLazy
 import org.jetbrains.kotlin.idea.inspections.AbstractKotlinInspection
-import org.jetbrains.kotlin.psi.KtParameter
 import org.jetbrains.kotlin.psi.KtVisitorVoid
 import org.jetbrains.kotlin.psi.annotationEntryVisitor
 import org.jetbrains.uast.UAnnotation
