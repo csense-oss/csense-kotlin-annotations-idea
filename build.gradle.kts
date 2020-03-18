@@ -1,6 +1,6 @@
 plugins {
     id("org.jetbrains.intellij") version "0.4.15"
-    kotlin("jvm") version "1.3.61"
+    kotlin("jvm") version "1.3.70"
     java
     id("org.owasp.dependencycheck") version "5.2.4"
 }
@@ -27,7 +27,7 @@ dependencies {
     implementation("csense.kotlin:csense-kotlin-jvm:0.0.31")
     implementation("csense.kotlin:csense-kotlin-annotations-jvm:0.0.17")
     implementation("csense.kotlin:csense-kotlin-ds-jvm:0.0.24")
-    implementation("csense.idea.base:csense-idea-base:0.1.7")
+    implementation("csense.idea.base:csense-idea-base:0.1.8")
 }
 
 tasks.getByName<org.jetbrains.intellij.tasks.PatchPluginXmlTask>("patchPluginXml") {
@@ -36,6 +36,7 @@ tasks.getByName<org.jetbrains.intellij.tasks.PatchPluginXmlTask>("patchPluginXml
       <ul>
         <li>Fixes to threading inspector.</li>
         <li>Updated to threading inspector as well.</li>
+        <li>Fixed external annotation parsing of limits ect.</li>
       </ul>
       """)
 }

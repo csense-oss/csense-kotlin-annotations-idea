@@ -71,7 +71,7 @@ class QuickNumberRangeInspection : AbstractKotlinInspection() {
             holder: ProblemsHolder
     ) {
         valueArguments.forEachIndexed { index: Int, ktValueArgument: KtValueArgument? ->
-            val argAnnotations = resolvedAnnotations.getSafe(index)
+            val argAnnotations = resolvedAnnotations.getOrNull(index)
             if (argAnnotations != null && argAnnotations.isNotEmpty() && ktValueArgument != null) {
                 val typeRange: RangeParser<*>? = RangeParser.parse(argAnnotations)
                 if (typeRange != null && !typeRange.validate(argAnnotations, ktValueArgument)) {
