@@ -24,19 +24,18 @@ repositories {
 }
 
 dependencies {
-    implementation("csense.kotlin:csense-kotlin-jvm:0.0.29")
-    implementation("csense.kotlin:csense-kotlin-annotations-jvm:0.0.15")
+    implementation("csense.kotlin:csense-kotlin-jvm:0.0.31")
+    implementation("csense.kotlin:csense-kotlin-annotations-jvm:0.0.17")
     implementation("csense.kotlin:csense-kotlin-ds-jvm:0.0.24")
-    implementation("csense.idea.base:csense-idea-base:0.1.6")
+    implementation("csense.idea.base:csense-idea-base:0.1.7")
 }
 
 tasks.getByName<org.jetbrains.intellij.tasks.PatchPluginXmlTask>("patchPluginXml") {
     changeNotes("""
       Changes now involves
       <ul>
-        <li>ParameterLessConstructor annotation supported</li>
-        <li>SuperCall / superCallRequired annotation supported</li>
-        <li>Fixed analyzing of types for ranges</li>
+        <li>Fixes to threading inspector.</li>
+        <li>Updated to threading inspector as well.</li>
       </ul>
       """)
 }

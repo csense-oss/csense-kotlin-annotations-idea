@@ -13,7 +13,6 @@ import csense.kotlin.annotations.idea.inspections.threading.QuickThreadingCallIn
 class InspectionProvider : InspectionToolProvider {
     override fun getInspectionClasses(): Array<Class<*>> {
         return arrayOf(
-//                QuickThreadingPropertyInspection::class.java,
                 QuickThreadingCallInspection::class.java,
                 QuickNumberRangeInspection::class.java,
                 QuickNumberRangeTypeValueInspection::class.java,

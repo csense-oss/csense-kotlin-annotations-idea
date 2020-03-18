@@ -8,8 +8,8 @@ class InBackgroundContextExternalAnnotation : ExternalMultiplePsiAnnotationProvi
     companion object {
         val name = "csense.kotlin.annotations.threading.InBackgroundContext"
     }
-
+    
     override fun isUsableForType(owner: PsiModifierListOwner?): Boolean =
             owner is PsiClass
-
+    
 }
