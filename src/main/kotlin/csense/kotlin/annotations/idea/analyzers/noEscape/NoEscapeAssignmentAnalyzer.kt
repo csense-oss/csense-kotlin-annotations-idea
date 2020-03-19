@@ -9,6 +9,12 @@ import org.jetbrains.kotlin.psi.*
 import org.jetbrains.uast.*
 
 object NoEscapeAssignmentAnalyzer : Analyzer<KtExpression> {
+    //Types of escape:
+    // - direct assignment (simple) //either via a function call or object access.
+    // - parsing as argument to function where its not marked NoEscape (as that means its allowed to escape) (semi difficult)
+    // - for .let, apply ect we should inspect the lambda.. which can get quite tricky. (hard)
+    // -
+    
     override fun analyze(item: KtExpression): AnalyzerResult {
         val errors = mutableListOf<AnalyzerError>()
         val extManager = ExternalAnnotationsManager.getInstance(item.project)
@@ -31,7 +37,7 @@ object NoEscapeAssignmentAnalyzer : Analyzer<KtExpression> {
                     //quickfix : annotate method
                     errors.add(AnalyzerError(
                             item,
-                            "This is marked NoEscape; witemhout annotating this as NoEscape you are escaping a NoEscape.",
+                            "This is marked NoEscape; Without annotating this as NoEscape you are escaping a NoEscape.",
                             arrayOf()
                     ))
                 }

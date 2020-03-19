@@ -45,11 +45,7 @@ class NoEscapeAssigmentInspection : AbstractKotlinInspection() {
     
     override fun buildVisitor(holder: ProblemsHolder,
                               isOnTheFly: Boolean): KtVisitorVoid {
-        //Types of escape:
-        // - direct assignment (simple) //either via a function call or object access.
-        // - parsing as argument to function where its not marked NoEscape (as that means its allowed to escape) (semi difficult)
-        // - for .let, apply ect we should inspect the lambda.. which can get quite tricky. (hard)
-        // -
+
         return expressionVisitor { exp: KtExpression ->
             val result = NoEscapeAssignmentAnalyzer.analyze(exp)
             result.errors.forEach { error: AnalyzerError -> holder.registerProblem(error) }
