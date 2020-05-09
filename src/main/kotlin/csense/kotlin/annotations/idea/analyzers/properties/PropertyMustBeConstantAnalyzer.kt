@@ -27,7 +27,7 @@ object PropertyMustBeConstantAnalyzer : Analyzer<KtProperty> {
         }
         
         if (!item.hasPropertyMustBeContant() && !item.isOverridingMustBeConstantProperty()) {
-            AnalyzerResult(errors)
+            return AnalyzerResult(errors)
         }
         //we have a "non trivial " getter (or alike) and or its a setter, and its must be a constant.
         if (item.setter != null || item.isVar) {
