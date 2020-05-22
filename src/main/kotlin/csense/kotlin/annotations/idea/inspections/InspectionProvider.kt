@@ -9,9 +9,11 @@ import csense.kotlin.annotations.idea.inspections.properties.PropertyMustBeConst
 import csense.kotlin.annotations.idea.inspections.sideeffect.NoEscapeAssigmentInspection
 import csense.kotlin.annotations.idea.inspections.sideeffect.NoEscapeInspection
 import csense.kotlin.annotations.idea.inspections.threading.QuickThreadingCallInspection
+import csense.kotlin.annotations.idea.startup.*
 
 class InspectionProvider : InspectionToolProvider {
     override fun getInspectionClasses(): Array<Class<*>> {
+        StartupService.instance
         return arrayOf(
                 QuickThreadingCallInspection::class.java,
                 QuickNumberRangeInspection::class.java,

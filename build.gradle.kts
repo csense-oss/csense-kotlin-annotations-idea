@@ -1,12 +1,12 @@
 plugins {
-    id("org.jetbrains.intellij") version "0.4.15"
-    kotlin("jvm") version "1.3.70"
+    id("org.jetbrains.intellij") version "0.4.21"
+    kotlin("jvm") version "1.3.72"
     java
     id("org.owasp.dependencycheck") version "5.2.4"
 }
 
 group = "csense.kotlin"
-version = "0.6.4"
+version = "0.6.5"
 
 
 // See https://github.com/JetBrains/gradle-intellij-plugin/
@@ -24,19 +24,17 @@ repositories {
 }
 
 dependencies {
-    implementation("csense.kotlin:csense-kotlin-jvm:0.0.31")
+    implementation("csense.kotlin:csense-kotlin-jvm:0.0.34")
     implementation("csense.kotlin:csense-kotlin-annotations-jvm:0.0.17")
-    implementation("csense.kotlin:csense-kotlin-ds-jvm:0.0.24")
-    implementation("csense.idea.base:csense-idea-base:0.1.8")
+    implementation("csense.kotlin:csense-kotlin-ds-jvm:0.0.25")
+    implementation("csense.idea.base:csense-idea-base:0.1.9")
 }
 
 tasks.getByName<org.jetbrains.intellij.tasks.PatchPluginXmlTask>("patchPluginXml") {
     changeNotes("""
-      Changes now involves
       <ul>
         <li>Fixes to threading inspector.</li>
-        <li>Updated to threading inspector as well.</li>
-        <li>Fixed external annotation parsing of limits ect.</li>
+        <li>Performance improvements</li>
       </ul>
       """)
 }

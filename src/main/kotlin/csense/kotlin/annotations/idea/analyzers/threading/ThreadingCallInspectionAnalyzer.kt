@@ -9,15 +9,30 @@ import csense.idea.base.bll.psi.*
 import csense.idea.base.cache.*
 import csense.idea.base.mpp.*
 import csense.kotlin.annotations.idea.analyzers.*
+import csense.kotlin.ds.cache.*
 import csense.kotlin.extensions.*
+import csense.kotlin.extensions.collections.*
+import csense.kotlin.logger.*
 import org.jetbrains.kotlin.asJava.elements.*
 import org.jetbrains.kotlin.lexer.*
+import org.jetbrains.kotlin.name.*
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.psi.psiUtil.*
 
+data class CachedThreadingCallResult(val modificationStamp: Long, val result: AnalyzerResult)
 
 object ThreadingCallInspectionAnalyzer {
+    
+    private val funCache: SimpleLRUCache<FqName, CachedThreadingCallResult> = SimpleLRUCache(50)
+    
     fun analyze(ourCallFunction: KtNamedFunction): AnalyzerResult {
+        val fqName: FqName? = ourCallFunction.fqName
+        
+        val cached: CachedThreadingCallResult? = funCache[fqName]
+        if (fqName != null && cached != null && cached.modificationStamp >= ourCallFunction.modificationStamp) {
+            L.debug("thread call inspection analyzer","\tSkipping method as we have already analyzed it.")
+            return cached.result
+        }
         val errors = mutableListOf<AnalyzerError>()
         
         val extMan = ExternalAnnotationsManager.getInstance(ourCallFunction.project)
@@ -41,11 +56,12 @@ object ThreadingCallInspectionAnalyzer {
         }
         //now we are either of them, then collect and see if any function invocation are of the opposite type.
         ourCallFunction.forEachDescendantOfType { exp: KtCallExpression ->
-            val psiResolved = exp.resolvePsi() ?: return@forEachDescendantOfType
             //do not inspect inbuilt constructs.
             if (exp.isInbuiltConstruct()) {
                 return@forEachDescendantOfType
             }
+            val psiResolved = exp.resolvePsi() ?: return@forEachDescendantOfType
+            
             
             val methodThreading = psiResolved.computeThreading(extMan)
             
@@ -65,11 +81,11 @@ object ThreadingCallInspectionAnalyzer {
                     //if we are in a lambda we are to verify that it itself is not marked / annotated.
                     val x = it.computeThreadingFromTo() ?: return@goUpUntil
                     //DO not report constructs..
-                    if (threadTypes.isInValidFor(x)) {
+                    if (x.isInValidFor(threadTypes)) {
                         //threadType is the root problem (the call) the context change is where the things" went wrong".
                         errors.add(AnalyzerError(
                                 exp,
-                                threadTypes.computeErrorMessageTo(x),
+                                x.computeErrorMessageTo(threadTypes),
                                 arrayOf()))
                         haveReportedIssue = true
                     } else {
@@ -131,7 +147,13 @@ object ThreadingCallInspectionAnalyzer {
                 }
             }
         }
-        return AnalyzerResult(errors)
+        val result = AnalyzerResult(errors)
+        if (fqName != null) {
+            funCache[fqName] = CachedThreadingCallResult(
+                    ourCallFunction.modificationStamp,
+                    result)
+        }
+        return result
     }
 }
 
@@ -145,7 +167,7 @@ fun Threading.computeErrorMessageToThis(): String {
 }
 
 fun Threading.computeErrorMessageTo(other: Threading): String {
-    return "Trying to call ${other.computeName()} from ${this.computeName()}"
+    return "Trying to access a `${other.computeName()}` from a `${this.computeName()}`"
 }
 
 
@@ -308,9 +330,9 @@ fun PsiElement.computeThreadingFromTo(): Threading? {
     
     if (this is KtLambdaArgument) {
         val call = this.parent as? KtCallExpression
-        val parmIndex = call?.valueArguments?.indexOf(this)
+        val parmIndex = call?.valueArguments?.indexOfOrNull(this)
         val fnc = call?.resolveMainReference() as? KtNamedFunction
-        if (parmIndex != null && parmIndex != -1) {
+        if (parmIndex != null) {
             val lambdaParam = fnc?.valueParameters?.getOrNull(parmIndex)
             val annotations = lambdaParam?.annotationEntries?.toMppAnnotations()
             val annotationsThreading = annotations?.computeThreading()
@@ -419,14 +441,15 @@ fun List<MppAnnotation>.isInvalidThreadingAnnotations(): Boolean {
 
 fun Threading.isInValidFor(other: Threading): Boolean = !isValidFor(other)
 
-fun Threading.isValidFor(other: Threading): Boolean = when {
+//This is "calling to" and "other" is the context we are given.
+fun Threading.isValidFor(
+        other: Threading
+): Boolean {
     //any thing mixed with any thread is "ok" (any calling  out however is NOT ok).
-    other == Threading.AnyThreaded -> true
-    //same type => ok
-    this == other -> true
-    //same type => ok
-    //any kind of mixing.
-    else -> false
+    if (other == Threading.AnyThreaded) {
+        return true
+    }
+    return this == other
 }
 
 

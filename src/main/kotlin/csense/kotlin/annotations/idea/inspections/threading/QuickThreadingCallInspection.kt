@@ -14,7 +14,7 @@ import csense.idea.base.mpp.toMppAnnotations
 import csense.kotlin.annotations.idea.Constants
 import csense.kotlin.annotations.idea.analyzers.*
 import csense.kotlin.annotations.idea.analyzers.threading.*
-import csense.kotlin.extensions.map
+import csense.kotlin.extensions.*
 import org.jetbrains.kotlin.asJava.elements.KtLightMethod
 import org.jetbrains.kotlin.idea.inspections.AbstractKotlinInspection
 import org.jetbrains.kotlin.idea.references.resolveMainReferenceToDescriptors
@@ -75,7 +75,9 @@ class QuickThreadingCallInspection : AbstractKotlinInspection() {
     override fun buildVisitor(holder: ProblemsHolder,
                               isOnTheFly: Boolean): KtVisitorVoid {
         return namedFunctionVisitor { ourCallFunction: KtNamedFunction ->
-            val result = ThreadingCallInspectionAnalyzer.analyze(ourCallFunction)
+            val result = logMeasureTimeInMillis {
+                ThreadingCallInspectionAnalyzer.analyze(ourCallFunction)
+            }
             result.errors.forEach { holder.registerProblem(it) }
         }
     }

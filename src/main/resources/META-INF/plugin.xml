@@ -50,15 +50,14 @@
             <className>csense.kotlin.annotations.idea.externalAnnotations.ranges.FloatLimitExternalAnnotations</className>
         </intentionAction>
 
+        <applicationService serviceInterface="csense.kotlin.annotations.idea.startup.StartupService"
+                            serviceImplementation="csense.kotlin.annotations.idea.startup.StartupServiceImpl"/>
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">
         <inspectionToolProvider
                 implementation="csense.kotlin.annotations.idea.inspections.InspectionProvider"/>
     </extensions>
-
-    <extensionPoints>
-    </extensionPoints>
 
     <actions>
         <!-- Add your actions here -->
