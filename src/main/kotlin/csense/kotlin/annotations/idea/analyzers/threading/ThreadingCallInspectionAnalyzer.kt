@@ -23,7 +23,7 @@ data class CachedThreadingCallResult(val modificationStamp: Long, val result: An
 
 object ThreadingCallInspectionAnalyzer {
     
-    private val funCache: SimpleLRUCache<FqName, CachedThreadingCallResult> = SimpleLRUCache(50)
+    private val funCache: SimpleLRUCache<FqName, CachedThreadingCallResult> = SimpleLRUCache(500)
     
     fun analyze(ourCallFunction: KtNamedFunction): AnalyzerResult {
         val fqName: FqName? = ourCallFunction.fqName

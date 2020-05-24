@@ -14,6 +14,7 @@ interface StartupService {
 
 class StartupServiceImpl : StartupService {
     init {
-        L.usePrintAsLoggers()
+        L.isLoggingAllowed(false)
+//        L.usePrintAsLoggers()
     }
 }
