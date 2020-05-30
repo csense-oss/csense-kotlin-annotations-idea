@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "csense.kotlin"
-version = "0.6.5"
+version = "0.6.6"
 
 
 // See https://github.com/JetBrains/gradle-intellij-plugin/
@@ -24,17 +24,16 @@ repositories {
 }
 
 dependencies {
-    implementation("csense.kotlin:csense-kotlin-jvm:0.0.34")
+    implementation("csense.kotlin:csense-kotlin-jvm:0.0.35")
     implementation("csense.kotlin:csense-kotlin-annotations-jvm:0.0.17")
     implementation("csense.kotlin:csense-kotlin-ds-jvm:0.0.25")
-    implementation("csense.idea.base:csense-idea-base:0.1.9")
+    implementation("csense.idea.base:csense-idea-base:0.1.10")
 }
 
 tasks.getByName<org.jetbrains.intellij.tasks.PatchPluginXmlTask>("patchPluginXml") {
     changeNotes("""
       <ul>
-        <li>Fixes to threading inspector.</li>
-        <li>Performance improvements</li>
+        <li>Fixes to number range inspections</li>
       </ul>
       """)
 }

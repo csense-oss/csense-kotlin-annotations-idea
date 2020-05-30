@@ -7,7 +7,6 @@ import csense.idea.base.annotationss.resolveAllParameterAnnotations
 import csense.idea.base.bll.kotlin.isNumberType
 import csense.kotlin.annotations.idea.Constants
 import csense.kotlin.annotations.idea.bll.RangeParser
-import csense.kotlin.extensions.collections.getSafe
 import org.jetbrains.kotlin.idea.inspections.AbstractKotlinInspection
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.psi.psiUtil.anyDescendantOfType
