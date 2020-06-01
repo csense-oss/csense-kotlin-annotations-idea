@@ -2,7 +2,7 @@ plugins {
     id("org.jetbrains.intellij") version "0.4.21"
     kotlin("jvm") version "1.3.72"
     java
-    id("org.owasp.dependencycheck") version "5.2.4"
+    id("org.owasp.dependencycheck") version "5.3.2"
 }
 
 group = "csense.kotlin"
@@ -27,13 +27,15 @@ dependencies {
     implementation("csense.kotlin:csense-kotlin-jvm:0.0.35")
     implementation("csense.kotlin:csense-kotlin-annotations-jvm:0.0.17")
     implementation("csense.kotlin:csense-kotlin-ds-jvm:0.0.25")
-    implementation("csense.idea.base:csense-idea-base:0.1.10")
+    implementation("csense.idea.base:csense-idea-base:0.1.13")
 }
 
 tasks.getByName<org.jetbrains.intellij.tasks.PatchPluginXmlTask>("patchPluginXml") {
     changeNotes("""
       <ul>
         <li>Fixes to number range inspections</li>
+        <li>Fixes to hanging inspections + perf improvements</li>
+        <li>Fixes to super call inspector</li>
       </ul>
       """)
 }
