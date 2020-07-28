@@ -1,10 +1,7 @@
 package csense.kotlin.annotations.idea.bll
 
-import org.jetbrains.kotlin.psi.KtConstantExpression
-import org.jetbrains.kotlin.psi.KtExpression
-import org.jetbrains.kotlin.psi.KtPrefixExpression
-import org.jetbrains.kotlin.psi.ValueArgument
-import org.jetbrains.uast.UExpression
+import org.jetbrains.kotlin.psi.*
+import org.jetbrains.uast.*
 
 
 fun UExpression.asLong(): Long? = asT(String::toLongOrNull)

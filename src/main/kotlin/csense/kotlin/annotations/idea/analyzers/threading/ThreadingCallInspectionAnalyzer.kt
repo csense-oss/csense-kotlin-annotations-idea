@@ -9,30 +9,24 @@ import csense.idea.base.bll.psi.*
 import csense.idea.base.cache.*
 import csense.idea.base.mpp.*
 import csense.kotlin.annotations.idea.analyzers.*
-import csense.kotlin.ds.cache.*
 import csense.kotlin.extensions.*
 import csense.kotlin.extensions.collections.*
-import csense.kotlin.logger.*
 import org.jetbrains.kotlin.asJava.elements.*
+import org.jetbrains.kotlin.asJava.toLightAnnotation
 import org.jetbrains.kotlin.lexer.*
-import org.jetbrains.kotlin.name.*
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.psi.psiUtil.*
 
-data class CachedThreadingCallResult(val modificationStamp: Long, val result: AnalyzerResult)
-
 object ThreadingCallInspectionAnalyzer {
-    
-    private val funCache: SimpleLRUCache<FqName, CachedThreadingCallResult> = SimpleLRUCache(500)
-    
+
     fun analyze(ourCallFunction: KtNamedFunction): AnalyzerResult {
-        val fqName: FqName? = ourCallFunction.fqName
         
-        val cached: CachedThreadingCallResult? = funCache[fqName]
-        if (fqName != null && cached != null && cached.modificationStamp >= ourCallFunction.modificationStamp) {
-            L.debug("thread call inspection analyzer","\tSkipping method as we have already analyzed it.")
-            return cached.result
-        }
+        ourCallFunction.acceptChildren(object: KtTreeVisitorVoidBfsVoid(){
+            override fun visitElement(element: PsiElement) {
+                super.visitElement(element)
+            }
+        })
+        
         val errors = mutableListOf<AnalyzerError>()
         
         val extMan = ExternalAnnotationsManager.getInstance(ourCallFunction.project)
@@ -42,7 +36,7 @@ object ThreadingCallInspectionAnalyzer {
         //if "ourCallFunction" does not dictate a threading , we may infer it from the parent class / object which is what happens next.
         val thisThreading = ourCallFunction.computeThreading(extMan)
                 ?: parentContext
-                ?: return AnalyzerResult(errors)//no knowledge of this method.. just skip.
+                ?: return AnalyzerResult(errors)//no knowledge of this method.. just skip. //TODO look for things that changes the context to known ones
         
         //skip if no available data.
         //sanity check no one does both types of annotations at ones
@@ -50,7 +44,7 @@ object ThreadingCallInspectionAnalyzer {
         if (ourCallFunction.computeIfThreadingIsInvalid(extMan)) {
             errors.add(AnalyzerError(
                     ourCallFunction.nameIdentifier ?: ourCallFunction,
-                    "This method is annotated both as any threaded and ui threaded. Annotate it according to what type its supposed to be.",
+                    "This method is annotated with more than one threading type, please choose what this is...",
                     arrayOf()))
             return AnalyzerResult(errors)
         }
@@ -75,7 +69,7 @@ object ThreadingCallInspectionAnalyzer {
                 else -> null
             }
             
-            if (threadTypes != null) { //we are only afraid of UI threading.
+            if (threadTypes != null) {
                 var haveReportedIssue = false
                 exp.goUpUntil(ourCallFunction) {
                     //if we are in a lambda we are to verify that it itself is not marked / annotated.
@@ -106,13 +100,13 @@ object ThreadingCallInspectionAnalyzer {
         ourCallFunction.forEachDescendantOfType<KtNameReferenceExpression> { exp ->
             val psiResolved = exp.findPsi() ?: return@forEachDescendantOfType
             //do not inspect inbuilt constructs.
-            if (exp.isInbuiltConstruct() || psiResolved !is KtProperty) {
+            if (exp.isInbuiltConstruct() || psiResolved !is KtProperty || psiResolved.isLocal) { //if it is a local variable just skip it for now, as later it should be computed correctly.
                 return@forEachDescendantOfType
             }
             
             val methodThreading = psiResolved.computeThreading(extMan, exp)
             
-            val threadTypes: Threading? = methodThreading ?: when (psiResolved) {
+            val accessingThreadType: Threading? = methodThreading ?: when (psiResolved) {
                 is PsiMethod -> ClassHierarchyAnnotationsCache.getClassHierarchyAnnotations(
                         psiResolved.containingClass,
                         extMan).computeThreadingContext()
@@ -121,16 +115,16 @@ object ThreadingCallInspectionAnalyzer {
                         extMan).computeThreadingContext()
                 else -> null
             }
-            if (threadTypes != null) { //we are only afraid of UI threading.
+            if (accessingThreadType != null) { //we are only afraid of UI threading.
                 var haveReportedIssue = false
                 exp.goUpUntil(ourCallFunction) {
-                    val x = it.computeThreadingFromTo() ?: return@goUpUntil
+                    val expCurrentContext = it.computeThreadingFromTo() ?: return@goUpUntil
                     //DO not report constructs..
-                    if (threadTypes.isInValidFor(x)) {
+                    if (expCurrentContext.isInValidFor(accessingThreadType)) {
                         //threadType is the root problem (the call) the context change is where the things" went wrong".
                         errors.add(AnalyzerError(
                                 exp,
-                                threadTypes.computeErrorMessageTo(x),
+                                accessingThreadType.computeErrorMessageTo(expCurrentContext),
                                 arrayOf()))
                         haveReportedIssue = true
                     } else {
@@ -139,32 +133,18 @@ object ThreadingCallInspectionAnalyzer {
                 }
                 //if we did not exit then we have "NO" context changes , thus we are to look at the caller function
                 //DO not report constructs..
-                if (thisThreading.isInValidFor(threadTypes) && !haveReportedIssue) {
+                if (thisThreading.isInValidFor(accessingThreadType) && !haveReportedIssue) {
                     errors.add(AnalyzerError(
                             exp,
-                            thisThreading.computeErrorMessageTo(threadTypes),
+                            thisThreading.computeErrorMessageTo(accessingThreadType),
                             arrayOf()))
                 }
             }
         }
-        val result = AnalyzerResult(errors)
-        if (fqName != null) {
-            funCache[fqName] = CachedThreadingCallResult(
-                    ourCallFunction.modificationStamp,
-                    result)
-        }
-        return result
+        return AnalyzerResult(errors)
     }
 }
 
-
-fun Threading.computeErrorMessageToThis(): String {
-    return if (this == Threading.UIThreaded) {
-        "Tries to run UI code from the background"
-    } else {
-        "Tries to run Background code from UI code"
-    }
-}
 
 fun Threading.computeErrorMessageTo(other: Threading): String {
     return "Trying to access a `${other.computeName()}` from a `${this.computeName()}`"
@@ -182,10 +162,10 @@ fun Threading.computeName(): String {
 fun List<MppAnnotation>.computeThreadingContext(): Threading? {
     forEach {
         if (it.qualifiedName in uiContextNames) {
-            return Threading.UIThreaded
+            return@computeThreadingContext Threading.UIThreaded
         }
         if (it.qualifiedName in backgroundContextNames) {
-            return Threading.BackgroundThreaded
+            return@computeThreadingContext Threading.BackgroundThreaded
         }
     }
     return null
@@ -267,7 +247,8 @@ private val contextChangeToBackgroundNames = setOf(
 
 private data class ContextChangeNameToType(
         val mainThreadNames: Set<String>,
-        val otherTypeNames: Set<String>)
+        val otherTypeNames: Set<String>
+)
 
 private val kotlinCoroutineContextNames = ContextChangeNameToType(
         setOf("Main", "Dispatchers.Main"),
@@ -279,7 +260,8 @@ private val kotlinCoroutineContextNames = ContextChangeNameToType(
 private val contextChangeParameter = setOf(
         "kotlinx.coroutines.launch",
         "kotlinx.coroutines.async",
-        "kotlinx.coroutines.withContext"
+        "kotlinx.coroutines.withContext",
+        "kotlinx.coroutines.runBlocking"
 )
 
 //if we go from x to a background thread / worker thread
@@ -411,13 +393,29 @@ fun KtProperty.computeThreading(extMan: ExternalAnnotationsManager, exp: KtExpre
                     expParLeft is KtNameReferenceExpression &&
                     expParLeft.findPsi() == this
     
-    val annotations = annotationEntries.toMppAnnotations() +
-            (isSetter.map(setter, getter)?.annotationEntries?.toMppAnnotations() ?: listOf())
+    val annotations = annotationEntries.toMppAnnotations2() +
+            (isSetter.map(setter, getter)?.annotationEntries?.toMppAnnotations2() ?: listOf())
 //
     val result = annotations.computeThreading()
     return result ?: containingClass()
             ?.resolveAllClassMppAnnotation(extMan)
             ?.computeThreadingContext()
+}
+fun List<KtAnnotationEntry>.toMppAnnotations2(): List<MppAnnotation> = mapNotNull { it.toMppAnnotation2() }
+fun KtAnnotationEntry.toMppAnnotation2(): MppAnnotation? {
+
+    //first light
+    val qualifiedName = toLightAnnotation()?.qualifiedName
+    if (qualifiedName != null) {
+        return MppAnnotation(qualifiedName)
+    }
+    //then the "direct" kotlin way.
+    val ktName = this.typeReference?.resolve()?.findParentOfType<KtClass>()?.getKotlinFqNameString()
+    if (ktName != null) {
+        return MppAnnotation(ktName)
+    }
+    //failed.
+    return null
 }
 
 enum class Threading {

@@ -1,27 +1,12 @@
 package csense.kotlin.annotations.idea.inspections.properties
 
-import com.intellij.codeHighlighting.HighlightDisplayLevel
-import com.intellij.codeInspection.ProblemsHolder
-import com.intellij.psi.PsiElement
-import csense.idea.base.UastKtPsi.resolvePsi
-import csense.idea.base.bll.kotlin.findOverridingImpl
-import csense.idea.base.bll.kotlin.isOverriding
-import csense.idea.base.bll.kotlin.superClass
-import csense.idea.base.bll.psi.getKotlinFqName
-import csense.idea.base.mpp.MppAnnotation
-import csense.idea.base.mpp.toMppAnnotation
-import csense.idea.base.mpp.toMppAnnotations
-import csense.kotlin.annotations.idea.Constants
+import com.intellij.codeHighlighting.*
+import com.intellij.codeInspection.*
+import csense.kotlin.annotations.idea.*
 import csense.kotlin.annotations.idea.analyzers.*
 import csense.kotlin.annotations.idea.analyzers.properties.*
-import org.jetbrains.kotlin.asJava.toLightAnnotation
-import org.jetbrains.kotlin.idea.inspections.AbstractKotlinInspection
-import org.jetbrains.kotlin.lexer.KtTokens
+import org.jetbrains.kotlin.idea.inspections.*
 import org.jetbrains.kotlin.psi.*
-import org.jetbrains.kotlin.psi.psiUtil.anyDescendantOfType
-import org.jetbrains.kotlin.psi.psiUtil.collectDescendantsOfType
-import org.jetbrains.kotlin.psi.psiUtil.containingClassOrObject
-import org.jetbrains.kotlin.psi.psiUtil.findPropertyByName
 
 class PropertyMustBeConstantInspection : AbstractKotlinInspection() {
     override fun getDisplayName(): String {

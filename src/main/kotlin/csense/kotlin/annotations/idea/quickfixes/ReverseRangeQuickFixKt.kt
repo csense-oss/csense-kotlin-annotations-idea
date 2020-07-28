@@ -1,24 +1,21 @@
 package csense.kotlin.annotations.idea.quickfixes
 
-import com.intellij.codeInspection.LocalQuickFix
-import com.intellij.codeInspection.ProblemDescriptor
-import com.intellij.openapi.project.Project
-import com.intellij.util.IncorrectOperationException
-import csense.kotlin.annotations.idea.Constants
-import csense.kotlin.annotations.idea.bll.RangeParser
-import org.jetbrains.kotlin.idea.util.application.executeWriteCommand
-import org.jetbrains.kotlin.psi.KtAnnotationEntry
-import org.jetbrains.kotlin.psi.KtConstantExpression
-import org.jetbrains.kotlin.psi.psiUtil.collectDescendantsOfType
-import org.jetbrains.uast.UAnnotation
-import org.jetbrains.uast.tryResolve
+import com.intellij.codeInspection.*
+import com.intellij.openapi.project.*
+import com.intellij.util.*
+import csense.kotlin.annotations.idea.*
+import csense.kotlin.annotations.idea.bll.*
+import org.jetbrains.kotlin.idea.util.application.*
+import org.jetbrains.kotlin.psi.*
+import org.jetbrains.kotlin.psi.psiUtil.*
 
 class ReverseRangeQuickFixKt(
-        val elements: List<KtAnnotationEntry?>) : LocalQuickFix {
-
+        val elements: List<KtAnnotationEntry?>
+) : LocalQuickFix {
+    
     override fun getFamilyName() = "${Constants.quickFixFamilyPrefix} swap range (from & to)"
     override fun getName(): String = "Swap range from and to"
-
+    
     override fun applyFix(project: Project, descriptor: ProblemDescriptor) {
         val ranges = RangeParser.parseKt(elements) ?: return
         //sanity test.
@@ -41,6 +38,6 @@ class ReverseRangeQuickFixKt(
             }
         }
     }
-
+    
     override fun startInWriteAction(): Boolean = false
 }

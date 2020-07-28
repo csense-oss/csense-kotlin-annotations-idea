@@ -3,7 +3,6 @@ package csense.kotlin.annotations.idea.analyzers.properties
 import csense.idea.base.bll.kotlin.*
 import csense.idea.base.mpp.*
 import csense.kotlin.annotations.idea.analyzers.*
-import csense.kotlin.annotations.idea.inspections.properties.*
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.psi.psiUtil.*
 

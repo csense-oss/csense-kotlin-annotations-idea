@@ -1,10 +1,9 @@
 package csense.kotlin.annotations.idea.analyzers.noEscape
 
 import com.intellij.codeInsight.*
-import csense.idea.base.annotationss.*
+import csense.idea.base.annotations.*
 import csense.idea.base.bll.psi.*
 import csense.kotlin.annotations.idea.analyzers.*
-import csense.kotlin.annotations.idea.inspections.sideeffect.*
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.uast.*
 

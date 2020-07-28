@@ -1,18 +1,7 @@
 package csense.kotlin.annotations.idea.bll
 
-import csense.idea.base.bll.kotlin.isConstant
-import csense.kotlin.annotations.idea.inspections.*
-import org.jetbrains.kotlin.idea.analysis.analyzeInContext
-import org.jetbrains.kotlin.idea.caches.resolve.analyze
-import org.jetbrains.kotlin.js.descriptorUtils.nameIfStandardType
 import org.jetbrains.kotlin.psi.*
-import org.jetbrains.kotlin.resolve.BindingContext
-import org.jetbrains.kotlin.resolve.calls.callUtil.getType
-import org.jetbrains.kotlin.resolve.lazy.BodyResolveMode
-import org.jetbrains.uast.UAnnotation
-import org.jetbrains.uast.UExpression
-import org.jetbrains.uast.namePsiElement
-import org.jetbrains.uast.toUElementOfType
+import org.jetbrains.uast.*
 
 //TODO parse / use
 //https://github.com/JetBrains/java-annotations/blob/master/java8/src/main/java/org/jetbrains/annotations/Range.java
@@ -31,10 +20,10 @@ sealed class RangeParser<T>(
         val isEqual: (from: T, to: T) -> Boolean,
         val isGreaterThan: (from: T, to: T) -> Boolean
 ) {
-    
-    
+
+
     //TODO Unsigned numbers
-    
+
     //whole numbers
     object ByteRangeParser : RangeParser<Byte>(
             false,
@@ -47,7 +36,7 @@ sealed class RangeParser<T>(
             { from: Byte, to: Byte, value: Byte -> value in from..to },
             { from: Byte, to: Byte -> from == to },
             { from: Byte, to: Byte -> from > to })
-    
+
     object ShortRangeParser : RangeParser<Short>(
             false,
             setOf("ShortLimit"), //range is from jetbrains annotations
@@ -59,7 +48,7 @@ sealed class RangeParser<T>(
             { from: Short, to: Short, value: Short -> value in from..to },
             { from: Short, to: Short -> from == to },
             { from: Short, to: Short -> from > to })
-    
+
     object IntRangeParser : RangeParser<Int>(
             false,
             setOf("IntRange", "IntLimit", "Range"), //range is from jetbrains annotations
@@ -71,8 +60,8 @@ sealed class RangeParser<T>(
             { from: Int, to: Int, value: Int -> value in from..to },
             { from: Int, to: Int -> from == to },
             { from: Int, to: Int -> from > to })
-    
-    
+
+
     object LongRangeParser : RangeParser<Long>(
             false,
             setOf("LongLimit", "Range"), //range is from jetbrains annotations
@@ -84,8 +73,8 @@ sealed class RangeParser<T>(
             { from: Long, to: Long, value: Long -> value in from..to },
             { from: Long, to: Long -> from == to },
             { from: Long, to: Long -> from > to })
-    
-    
+
+
     //float /double
     object FloatRangeParser : RangeParser<Float>(
             false,
@@ -98,8 +87,8 @@ sealed class RangeParser<T>(
             { from: Float, to: Float, value: Float -> value in from..to },
             { from: Float, to: Float -> from == to },
             { from: Float, to: Float -> from > to })
-    
-    
+
+
     object DoubleRangeParser : RangeParser<Double>(
             false,
             setOf("FloatRange", "DoubleLimit", "Range"), //range is from jetbrains annotations
@@ -111,34 +100,34 @@ sealed class RangeParser<T>(
             { from: Double, to: Double, value: Double -> value in from..to },
             { from: Double, to: Double -> from == to },
             { from: Double, to: Double -> from > to })
-    
+
     object AndroidIntRange : RangeParser<Long>(
             true,
             setOf("IntRange"),
             Long.MIN_VALUE,
             Long.MAX_VALUE,
-            listOf("Long","Int"),
+            listOf("Long", "Int"),
             UExpression::asLong,
             KtExpression::asLong,
             { from: Long, to: Long, value: Long -> value in from..to },
             { from: Long, to: Long -> from == to },
             { from: Long, to: Long -> from > to })
-    
+
     object AndroidFloatRange : RangeParser<Double>(
             true,
             setOf("FloatRange"),
             Double.MIN_VALUE,
             Double.MAX_VALUE,
-            listOf("Double","Float"),
+            listOf("Double", "Float"),
             UExpression::asDouble,
             KtExpression::asDouble,
             { from: Double, to: Double, value: Double -> value in from..to },
             { from: Double, to: Double -> from == to },
             { from: Double, to: Double -> from > to })
-    
-    
+
+
     companion object {
-        
+
         fun parse(argAnnotations: List<UAnnotation?>): RangeParser<*>? {
             return when {
                 ByteRangeParser.isThis(argAnnotations) -> ByteRangeParser
@@ -153,7 +142,7 @@ sealed class RangeParser<T>(
                 else -> null
             }
         }
-        
+
         fun parseKt(argAnnotations: List<KtAnnotationEntry?>): RangeParser<*>? {
             return when {
                 ByteRangeParser.isThisKt(argAnnotations) -> ByteRangeParser
@@ -166,50 +155,56 @@ sealed class RangeParser<T>(
             }
         }
     }
-    
+
     fun isThisKt(annotations: List<KtAnnotationEntry?>): Boolean = annotations.findThis() != null
-    
+
     fun List<KtAnnotationEntry?>.findThis(): KtAnnotationEntry? = find {
         it != null &&
                 it.valueArguments.size <= 2 && annotationNames.contains(it.shortName?.asString())
     }
-    
+
     fun isThis(values: List<UAnnotation?>): Boolean = values.findThis() != null
-    
+
     fun List<UAnnotation?>.findThis(): UAnnotation? = find {
         it != null &&
-                it.attributeValues.size <= 2 && annotationNames.contains(it.namePsiElement?.text ?: "")
+                it.attributeValues.size <= 2 && annotationNames.contains(it.namePsiElement?.text
+                ?: "")
     }
-    
+
     fun computeErrorMessage(argAnnotations: List<UAnnotation?>, valueArgument: KtValueArgument): String {
         val annotation = argAnnotations.findThis() ?: return ""
-        val asUExpression = valueArgument.getArgumentExpression()?.toUElementOfType<UExpression>() ?: return ""
+        val asUExpression = valueArgument.getArgumentExpression()?.toUElementOfType<UExpression>()
+                ?: return ""
         val range = annotation.asRangePair(minValue, maxValue, parseValue) ?: return ""
         val value = parseValue(asUExpression) ?: return ""
         return "$value is not in range [${range.from};${range.to}]"
     }
-    
-    
+
+
     fun validate(argAnnotations: List<UAnnotation?>, valueArgument: KtValueArgument): Boolean {
         val annotation = argAnnotations.findThis() ?: return false
         val range = annotation.asRangePair(minValue, maxValue, parseValue) ?: return false
-        val asUExpression = valueArgument.getArgumentExpression()?.toUElementOfType<UExpression>() ?: return false
-        val value = parseValue(asUExpression) ?: return false
+        val asUExpression = valueArgument.getArgumentExpression()?.toUElementOfType<UExpression>()
+                ?: return false
+        val value = parseValue(asUExpression)
+                ?: return true //well since we are not doing any "deep" analysis, we just assume any complex expression is ok.
+        //this could be expanded to look at the given value (it might be annotated as well) and verify if its range is in this range.
+        //if it is a math expression then we would have to do a deep analysis, which is quite complex.
         return isInRange(range.from, range.to, value)
     }
-    
+
     fun computeInvalidRangeMessageKt(argAnnotations: List<KtAnnotationEntry?>): String? {
         val annotation = argAnnotations.findThis() ?: return null
         val range = annotation.asRangePair(minValue, maxValue, parseValueKt) ?: return null
         return range.computeInvalidMessage()
     }
-    
+
     fun computeInvalidRangeMessage(argAnnotations: List<UAnnotation?>): String? {
         val annotation = argAnnotations.findThis() ?: return null
         val range = annotation.asRangePair(minValue, maxValue, parseValue) ?: return null
         return range.computeInvalidMessage()
     }
-    
+
     private fun RangePair<T>.computeInvalidMessage(): String? {
         if (isEqual(from, to)) {
             return "Range is invalid, as no value exists between from and to(${from};${to})"
@@ -219,22 +214,22 @@ sealed class RangeParser<T>(
             else -> null
         }
     }
-    
+
     fun isRangeReveresed(argAnnotations: List<UAnnotation?>): Boolean {
         val annotation = argAnnotations.findThis() ?: return false
         val range = annotation.asRangePair(minValue, maxValue, parseValue) ?: return false
         return isGreaterThan(range.from, range.to)
     }
-    
+
     fun isRangeReveresedKt(argAnnotations: List<KtAnnotationEntry?>): Boolean {
         val anno = argAnnotations.findThis() ?: return false
         val range = anno.asRangePair(minValue, maxValue, parseValueKt) ?: return false
         return isGreaterThan(range.from, range.to)
     }
-    
+
     fun findAnnotation(elements: List<UAnnotation?>): UAnnotation? =
             elements.findThis()
-    
+
     fun findAnnotationKt(elements: List<KtAnnotationEntry?>): KtAnnotationEntry? =
             elements.findThis()
 }

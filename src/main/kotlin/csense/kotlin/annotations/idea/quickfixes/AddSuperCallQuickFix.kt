@@ -1,22 +1,19 @@
 package csense.kotlin.annotations.idea.quickfixes
 
-import com.intellij.codeInspection.LocalQuickFix
-import com.intellij.codeInspection.ProblemDescriptor
-import com.intellij.openapi.project.Project
-import com.intellij.util.IncorrectOperationException
-import csense.idea.base.bll.kotlin.addFirstInScope
-import csense.idea.base.bll.kotlin.convertToBlockFunction
-import csense.idea.base.bll.psi.smartPsiElementPointer
-import csense.kotlin.logger.logClassError
-import org.jetbrains.kotlin.psi.KtNamedFunction
-import org.jetbrains.kotlin.psi.KtPsiFactory
+import com.intellij.codeInspection.*
+import com.intellij.openapi.project.*
+import com.intellij.util.*
+import csense.idea.base.bll.kotlin.*
+import csense.idea.base.bll.psi.*
+import csense.kotlin.logger.*
+import org.jetbrains.kotlin.psi.*
 
 class AddSuperCallQuickFix(fnc: KtNamedFunction) : LocalQuickFix {
-
+    
     private val pointer = fnc.smartPsiElementPointer()
-
+    
     override fun getFamilyName(): String = "Add super call"
-
+    
     override fun applyFix(project: Project, descriptor: ProblemDescriptor) {
         val fnc = pointer.element ?: return
         val fncName = fnc.name ?: return
@@ -40,7 +37,7 @@ class AddSuperCallQuickFix(fnc: KtNamedFunction) : LocalQuickFix {
             }
         }
     }
-
+    
     override fun startInWriteAction(): Boolean = true
-
+    
 }

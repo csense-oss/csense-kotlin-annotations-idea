@@ -1,10 +1,7 @@
 package csense.kotlin.annotations.idea.bll
 
-import org.jetbrains.kotlin.psi.KtAnnotationEntry
-import org.jetbrains.kotlin.psi.KtExpression
-import org.jetbrains.kotlin.psi.ValueArgument
-import org.jetbrains.uast.UAnnotation
-import org.jetbrains.uast.UExpression
+import org.jetbrains.kotlin.psi.*
+import org.jetbrains.uast.*
 
 
 data class RangePair<T>(val from: T, val to: T)
@@ -23,7 +20,7 @@ fun <T> UAnnotation.asRangePair(
         }
         1 -> {
             val exp = attributeValues.first()
-
+        
             if ("from".equals(exp.name, true)) {
                 toValue = maxValue
                 fromValue = parseValue(exp) ?: return null

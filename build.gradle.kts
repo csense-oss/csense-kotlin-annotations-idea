@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "csense.kotlin"
-version = "0.6.6"
+version = "0.7.0"
 
 
 // See https://github.com/JetBrains/gradle-intellij-plugin/
@@ -14,6 +14,7 @@ intellij {
     updateSinceUntilBuild = false //Disables updating since-build attribute in plugin.xml
     setPlugins("Kotlin", "java") // "java" if target 192 and above in plugin.xml
     version = "2019.2"
+    alternativeIdePath =  "C:\\Users\\kasper\\AppData\\Local\\JetBrains\\Toolbox\\apps\\AndroidStudio\\ch-0\\193.6514223"
 }
 
 repositories {
@@ -24,18 +25,18 @@ repositories {
 }
 
 dependencies {
-    implementation("csense.kotlin:csense-kotlin-jvm:0.0.35")
-    implementation("csense.kotlin:csense-kotlin-annotations-jvm:0.0.17")
+    implementation("csense.kotlin:csense-kotlin-jvm:0.0.36")
+    implementation("csense.kotlin:csense-kotlin-annotations-jvm:0.0.18")
     implementation("csense.kotlin:csense-kotlin-ds-jvm:0.0.25")
-    implementation("csense.idea.base:csense-idea-base:0.1.13")
+    implementation("csense.idea.base:csense-idea-base:0.1.19")
 }
 
 tasks.getByName<org.jetbrains.intellij.tasks.PatchPluginXmlTask>("patchPluginXml") {
     changeNotes("""
       <ul>
-        <li>Fixes to number range inspections</li>
-        <li>Fixes to hanging inspections + perf improvements</li>
-        <li>Fixes to super call inspector</li>
+        <li>now understands number annotations on types (which helps for functional declarations)</li>
+        <li>Performance for thread analyzers improved drastically</li>
+        <li>Fixes for threading analyzers</li>
       </ul>
       """)
 }

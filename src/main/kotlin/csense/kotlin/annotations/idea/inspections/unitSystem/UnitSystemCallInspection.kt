@@ -1,4 +1,4 @@
-package csense.kotlin.annotations.idea.inspections.sideeffect
+package csense.kotlin.annotations.idea.inspections.unitSystem
 
 import com.intellij.codeHighlighting.*
 import com.intellij.codeInspection.*
@@ -6,14 +6,14 @@ import csense.kotlin.annotations.idea.*
 import org.jetbrains.kotlin.idea.inspections.*
 import org.jetbrains.kotlin.psi.*
 
-class NoEscapeInspection : AbstractKotlinInspection() {
+class UnitSystemCallInspection : AbstractKotlinInspection() {
     override fun getDisplayName(): String {
-        return "NoEscapeInspection"
+        return "UnitSystemCallInspection"
     }
     
     override fun getStaticDescription(): String? {
         return """
-            
+        
         """.trimIndent()
     }
     
@@ -22,7 +22,7 @@ class NoEscapeInspection : AbstractKotlinInspection() {
     }
     
     override fun getShortName(): String {
-        return "NoEscapeInspection"
+        return "UnitSystemCallInspection"
     }
     
     override fun getGroupDisplayName(): String {
@@ -41,13 +41,8 @@ class NoEscapeInspection : AbstractKotlinInspection() {
             holder: ProblemsHolder,
             isOnTheFly: Boolean
     ): KtVisitorVoid {
-        //Types of escape:
-        // - parsing as argument to function where its not marked NoEscape (as that means its allowed to escape) (semi difficult)
-        // - for .let, apply ect we should inspect the lambda.. which can get quite tricky. (hard)
-        // -
-        return parameterVisitor {
-            //TODO make me
+        return callExpressionVisitor {
+        
         }
     }
-    
 }

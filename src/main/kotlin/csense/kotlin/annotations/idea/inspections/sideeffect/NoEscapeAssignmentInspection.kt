@@ -1,18 +1,14 @@
 package csense.kotlin.annotations.idea.inspections.sideeffect
 
-import com.intellij.codeHighlighting.HighlightDisplayLevel
-import com.intellij.codeInsight.ExternalAnnotationsManager
-import com.intellij.codeInspection.ProblemsHolder
-import csense.idea.base.annotationss.resolveAnnotationsKt
-import csense.idea.base.bll.psi.findParentOfType
-import csense.kotlin.annotations.idea.Constants
+import com.intellij.codeHighlighting.*
+import com.intellij.codeInspection.*
+import csense.kotlin.annotations.idea.*
 import csense.kotlin.annotations.idea.analyzers.*
 import csense.kotlin.annotations.idea.analyzers.noEscape.*
-import org.jetbrains.kotlin.idea.inspections.AbstractKotlinInspection
+import org.jetbrains.kotlin.idea.inspections.*
 import org.jetbrains.kotlin.psi.*
-import org.jetbrains.uast.UAnnotation
 
-class NoEscapeAssigmentInspection : AbstractKotlinInspection() {
+class NoEscapeAssignmentInspection : AbstractKotlinInspection() {
     override fun getDisplayName(): String {
         return "NoEscapeAssignmentInspection"
     }
@@ -43,9 +39,11 @@ class NoEscapeAssigmentInspection : AbstractKotlinInspection() {
         return true
     }
     
-    override fun buildVisitor(holder: ProblemsHolder,
-                              isOnTheFly: Boolean): KtVisitorVoid {
-
+    override fun buildVisitor(
+            holder: ProblemsHolder,
+            isOnTheFly: Boolean
+    ): KtVisitorVoid {
+        
         return expressionVisitor { exp: KtExpression ->
             val result = NoEscapeAssignmentAnalyzer.analyze(exp)
             result.errors.forEach { error: AnalyzerError -> holder.registerProblem(error) }

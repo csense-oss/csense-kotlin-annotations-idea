@@ -1,15 +1,17 @@
 package csense.kotlin.annotations.idea.inspections.numbers
 
-import com.intellij.codeHighlighting.HighlightDisplayLevel
-import com.intellij.codeInspection.LocalQuickFix
-import com.intellij.codeInspection.ProblemsHolder
+import com.intellij.codeHighlighting.*
+import com.intellij.codeInspection.*
+import com.intellij.psi.*
+import csense.idea.base.bll.*
+import csense.idea.base.bll.kotlin.*
 import csense.idea.base.bll.psi.*
-import csense.kotlin.annotations.idea.Constants
-import csense.kotlin.annotations.idea.bll.RangeParser
-import csense.kotlin.annotations.idea.quickfixes.ReverseRangeQuickFixKt
+import csense.kotlin.annotations.idea.*
+import csense.kotlin.annotations.idea.bll.*
+import csense.kotlin.annotations.idea.quickfixes.*
+import csense.kotlin.extensions.*
 import csense.kotlin.extensions.collections.list.*
-import csense.kotlin.extensions.mapLazy
-import org.jetbrains.kotlin.idea.inspections.AbstractKotlinInspection
+import org.jetbrains.kotlin.idea.inspections.*
 import org.jetbrains.kotlin.psi.*
 
 //instead of looking at the value of the range as the quick number range inspection does,
@@ -52,7 +54,6 @@ class QuickNumberRangeTypeValueInspection : AbstractKotlinInspection() {
         return true
     }
     
-    //TODO what the actuall is this... it tests the args of the annotations, not the type its "on". ?
     override fun buildVisitor(
             holder: ProblemsHolder,
             isOnTheFly: Boolean
@@ -63,9 +64,11 @@ class QuickNumberRangeTypeValueInspection : AbstractKotlinInspection() {
             val annotationType = RangeParser.parseKt(asList) ?: return@annotationEntryVisitor
             
             val parm = it.findParentOfType<KtParameter>() ?: return@annotationEntryVisitor
-            val resolvedType = parm.typeReference?.text ?: return@annotationEntryVisitor
-            if (annotationType.allowedTypeNames.doesNotContain(resolvedType)) {
-                holder.registerProblem(it, "Wrong range type. Expected `${annotationType.allowedTypeNames}` but got `$resolvedType`")
+            val resolvedType = parm.typeReference?.resolve() ?: return@annotationEntryVisitor
+
+            val resolvedTypeNamed: String? = resolvedType.invokeIsInstance<PsiNamedElement, String?> { element: PsiNamedElement -> element.name }
+            if (annotationType.allowedTypeNames.doesNotContain(resolvedTypeNamed)) {
+                holder.registerProblemSafe(it, "Wrong range type. Expected `${annotationType.allowedTypeNames}` but got `$resolvedTypeNamed`")
                 return@annotationEntryVisitor
             }
             
@@ -75,61 +78,12 @@ class QuickNumberRangeTypeValueInspection : AbstractKotlinInspection() {
                 val quickFixes: Array<LocalQuickFix> = isReversed.mapLazy(ifTrue = {
                     arrayOf(ReverseRangeQuickFixKt(asList))
                 }, ifFalse = { arrayOf() })
-                holder.registerProblem(
+                holder.registerProblemSafe(
                         it,
                         errorMessage,
                         *quickFixes
                 )
             }
-//
-//            val asUAnnotation = it.toUElementOfType<UAnnotation>()
-//            if (asUAnnotation == null) {
-//                val asList = listOf(it)
-//                val type = RangeParser.parseKt(asList) ?: return@annotationEntryVisitor
-//                val isAnyWrongType = it.valueArguments.any { valueArg ->
-//                    valueArg.getArgumentExpression()?.let { parm -> !type.verifyTypeName(parm) } ?: false
-//                }
-//                if (isAnyWrongType) {
-//                    holder.registerProblem(it, "Wrong range type. Expected ${type.typeName}")
-//                    return@annotationEntryVisitor
-//                }
-//                val errorMessage = type.computeInvalidRangeMessageKt(asList)
-//                val isReversed = type.isRangeReveresedKt(asList)
-//                if (errorMessage != null) {
-//                    val quickFixes: Array<LocalQuickFix> = isReversed.mapLazy(ifTrue = {
-//                        arrayOf(ReverseRangeQuickFixKt(asList))
-//                    }, ifFalse = { arrayOf() })
-//                    holder.registerProblem(
-//                            it,
-//                            errorMessage,
-//                            *quickFixes
-//                    )
-//                }
-//            } else {
-//
-//                val asList = listOf(asUAnnotation)
-//                val type = RangeParser.parse(asList) ?: return@annotationEntryVisitor
-//                val isAnyWrongType = !type.allowDifferentArgumentTypesThanAnnotating && it.valueArguments.any { valueArg ->
-//                    valueArg.getArgumentExpression()?.let { parm -> !type.verifyTypeName(parm) } ?: false
-//                }
-//                if (isAnyWrongType) {
-//                    holder.registerProblem(it, "Wrong range type. Expected ${type.typeName}")
-//                    return@annotationEntryVisitor
-//                }
-//                val errorMessage = type.computeInvalidRangeMessage(asList)
-//                val isReversed = type.isRangeReveresed(asList)
-//                if (errorMessage != null) {
-//                    val quickFixes: Array<LocalQuickFix> = isReversed.mapLazy(ifTrue = {
-//                        arrayOf(ReverseRangeQuickFixUart(asList))
-//                    }, ifFalse = { arrayOf() })
-//                    holder.registerProblem(
-//                            it,
-//                            errorMessage,
-//                            *quickFixes
-//                    )
-//                }
-//            }
-            
         }
     }
 }
