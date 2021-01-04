@@ -20,13 +20,6 @@ import org.jetbrains.kotlin.psi.psiUtil.*
 object ThreadingCallInspectionAnalyzer {
 
     fun analyze(ourCallFunction: KtNamedFunction): AnalyzerResult {
-        
-        ourCallFunction.acceptChildren(object: KtTreeVisitorVoidBfsVoid(){
-            override fun visitElement(element: PsiElement) {
-                super.visitElement(element)
-            }
-        })
-        
         val errors = mutableListOf<AnalyzerError>()
         
         val extMan = ExternalAnnotationsManager.getInstance(ourCallFunction.project)
