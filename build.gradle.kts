@@ -1,10 +1,10 @@
 plugins {
     //https://github.com/JetBrains/gradle-intellij-plugin
-    id("org.jetbrains.intellij") version "0.6.5"
-    kotlin("jvm") version "1.4.21"
+    id("org.jetbrains.intellij") version "0.7.2"
+    kotlin("jvm") version "1.4.32"
     java
     //https://github.com/jeremylong/dependency-check-gradle/releases
-    id("org.owasp.dependencycheck") version "6.0.4"
+    id("org.owasp.dependencycheck") version "6.1.4"
 }
 
 group = "csense.kotlin"
@@ -15,32 +15,38 @@ version = "0.7.0"
 intellij {
     updateSinceUntilBuild = false //Disables updating since-build attribute in plugin.xml
     setPlugins("Kotlin", "java") // "java" if target 192 and above in plugin.xml
-    version = "2019.2"
-    alternativeIdePath =  "C:\\Users\\kasper\\AppData\\Local\\JetBrains\\Toolbox\\apps\\AndroidStudio\\ch-0\\193.6514223"
+    version = "2020.1"
 }
 
 repositories {
-    jcenter()
-    //until ds is in jcenter
-    maven(url = "https://dl.bintray.com/csense-oss/maven")
-    maven(url = "https://dl.bintray.com/csense-oss/idea")
+    mavenCentral()
+    maven {
+        url = uri("https://pkgs.dev.azure.com/csense-oss/csense-oss/_packaging/csense-oss/maven/v1")
+        name = "csense-oss"
+    }
 }
 
 dependencies {
-    implementation("csense.kotlin:csense-kotlin-jvm:0.0.45")
-    implementation("csense.kotlin:csense-kotlin-annotations-jvm:0.0.40")
+    implementation("csense.kotlin:csense-kotlin-jvm:0.0.46")
+    implementation("csense.kotlin:csense-kotlin-annotations-jvm:0.0.41")
     implementation("csense.kotlin:csense-kotlin-datastructures-algorithms:0.0.41")
-    implementation("csense.idea.base:csense-idea-base:0.1.20")
+    implementation("csense.idea.base:csense-idea-base:0.1.22")
 }
 
 tasks.getByName<org.jetbrains.intellij.tasks.PatchPluginXmlTask>("patchPluginXml") {
-    changeNotes("""
+    changeNotes(
+        """
       <ul>
         <li>now understands number annotations on types (which helps for functional declarations)</li>
+        <li>now inspects default values with regards to number limits / ranges</li>
+        <li>handles nullable numbers for number limits / ranges</li>
+        <li>fixed to android and regular number ranges </li>
+        <li>Inspects default values for variables for number limits / ranges</li>
         <li>Performance for thread analyzers improved drastically</li>
         <li>Fixes for threading analyzers</li>
       </ul>
-      """)
+      """
+    )
 }
 
 tasks.getByName("check").dependsOn("dependencyCheckAnalyze")

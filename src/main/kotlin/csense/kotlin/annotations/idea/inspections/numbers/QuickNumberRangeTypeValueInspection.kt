@@ -23,55 +23,60 @@ import org.jetbrains.kotlin.psi.*
 //@IntRange(from = 0, to = 0) //???
 
 class QuickNumberRangeTypeValueInspection : AbstractKotlinInspection() {
-    
+
     override fun getDisplayName(): String {
         return "NumberRangeTypeValueInspector"
     }
-    
+
     override fun getStaticDescription(): String? {
         return """
             
         """.trimIndent()
     }
-    
+
     override fun getDescriptionFileName(): String? {
         return "more desc ? "
     }
-    
+
     override fun getShortName(): String {
         return "NumberRangeTypeValueInspector"
     }
-    
+
     override fun getGroupDisplayName(): String {
         return Constants.InspectionGroupName
     }
-    
+
     override fun getDefaultLevel(): HighlightDisplayLevel {
         return HighlightDisplayLevel.ERROR
     }
-    
+
     override fun isEnabledByDefault(): Boolean {
         return true
     }
-    
+
     override fun buildVisitor(
-            holder: ProblemsHolder,
-            isOnTheFly: Boolean
+        holder: ProblemsHolder,
+        isOnTheFly: Boolean
     ): KtVisitorVoid {
-        
+
         return annotationEntryVisitor {
             val asList = listOf(it)
             val annotationType = RangeParser.parseKt(asList) ?: return@annotationEntryVisitor
-            
-            val parm = it.findParentOfType<KtParameter>() ?: return@annotationEntryVisitor
-            val resolvedType = parm.typeReference?.resolve() ?: return@annotationEntryVisitor
 
-            val resolvedTypeNamed: String? = resolvedType.invokeIsInstance<PsiNamedElement, String?> { element: PsiNamedElement -> element.name }
+            val parm = it.findParentOfType<KtParameter>() ?: return@annotationEntryVisitor
+            val resolvedType = parm.typeReference?.resolve()
+                ?.invokeIsInstance<PsiNamedElement, String?> { element: PsiNamedElement -> element.name }
+                ?: parm.resolveType()?.toString()
+
+            val resolvedTypeNamed: String = resolvedType ?: return@annotationEntryVisitor
             if (annotationType.allowedTypeNames.doesNotContain(resolvedTypeNamed)) {
-                holder.registerProblemSafe(it, "Wrong range type. Expected `${annotationType.allowedTypeNames}` but got `$resolvedTypeNamed`")
+                holder.registerProblemSafe(
+                    it,
+                    "Wrong range type. Expected `${annotationType.allowedTypeNames}` but got `$resolvedTypeNamed`"
+                )
                 return@annotationEntryVisitor
             }
-            
+
             val errorMessage = annotationType.computeInvalidRangeMessageKt(asList)
             val isReversed = annotationType.isRangeReveresedKt(asList)
             if (errorMessage != null) {
@@ -79,9 +84,9 @@ class QuickNumberRangeTypeValueInspection : AbstractKotlinInspection() {
                     arrayOf(ReverseRangeQuickFixKt(asList))
                 }, ifFalse = { arrayOf() })
                 holder.registerProblemSafe(
-                        it,
-                        errorMessage,
-                        *quickFixes
+                    it,
+                    errorMessage,
+                    *quickFixes
                 )
             }
         }
