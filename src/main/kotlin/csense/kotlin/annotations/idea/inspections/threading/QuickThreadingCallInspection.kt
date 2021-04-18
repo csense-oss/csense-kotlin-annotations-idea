@@ -72,14 +72,14 @@ class QuickThreadingCallInspection : AbstractKotlinInspection() {
             }
         }
     }
-
-    companion object {
-        init {
-            L.usePrintAsLoggers()
-//            L.debugLoggers.add { tag: String, message: String, throwable: Throwable? ->
-//                Logger.getInstance(tag).debug(message, throwable)
-//            }
-            L.isLoggingAllowed(true)
-        }
-    }
+//
+//    companion object {
+//        init {
+//            L.usePrintAsLoggers()
+////            L.debugLoggers.add { tag: String, message: String, throwable: Throwable? ->
+////                Logger.getInstance(tag).debug(message, throwable)
+////            }
+//            L.isLoggingAllowed(true)
+//        }
+//    }
 }
