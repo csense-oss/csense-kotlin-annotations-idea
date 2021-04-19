@@ -4,7 +4,7 @@ plugins {
     kotlin("jvm") version "1.4.32"
     java
     //https://github.com/jeremylong/dependency-check-gradle/releases
-    id("org.owasp.dependencycheck") version "6.1.4"
+    id("org.owasp.dependencycheck") version "6.1.5"
 }
 
 group = "csense.kotlin"
