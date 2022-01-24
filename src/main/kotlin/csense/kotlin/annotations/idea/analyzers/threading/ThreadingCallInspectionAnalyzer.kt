@@ -2,12 +2,12 @@ package csense.kotlin.annotations.idea.analyzers.threading
 
 import com.intellij.codeInsight.*
 import com.intellij.psi.*
-import csense.idea.base.UastKtPsi.*
-import csense.idea.base.UastKtPsi.getKotlinFqNameString
 import csense.idea.base.bll.kotlin.*
 import csense.idea.base.bll.psi.*
+import csense.idea.base.bll.psi.getKotlinFqNameString
 import csense.idea.base.cache.*
 import csense.idea.base.mpp.*
+import csense.idea.base.uastKtPsi.*
 import csense.kotlin.annotations.idea.analyzers.*
 import csense.kotlin.extensions.*
 import csense.kotlin.extensions.collections.*
@@ -398,7 +398,7 @@ fun List<KtAnnotationEntry>.toMppAnnotations2(): List<MppAnnotation> = mapNotNul
 fun KtAnnotationEntry.toMppAnnotation2(): MppAnnotation? {
 
     //first light
-    val qualifiedName = toLightAnnotation()?.qualifiedName
+    val qualifiedName = this.toLightAnnotation()?.qualifiedName
     if (qualifiedName != null) {
         return MppAnnotation(qualifiedName)
     }

@@ -4,15 +4,12 @@ import com.intellij.codeHighlighting.*
 import com.intellij.codeInsight.*
 import com.intellij.codeInspection.*
 import com.intellij.psi.*
-import csense.idea.base.UastKtPsi.*
 import csense.idea.base.annotations.*
 import csense.idea.base.bll.*
 import csense.idea.base.bll.kotlin.*
 import csense.kotlin.annotations.idea.*
 import csense.kotlin.annotations.idea.bll.*
 import org.jetbrains.kotlin.asJava.elements.*
-import org.jetbrains.kotlin.builtins.*
-import org.jetbrains.kotlin.descriptors.annotations.*
 import org.jetbrains.kotlin.idea.inspections.*
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.psi.psiUtil.*
@@ -65,7 +62,7 @@ class QuickNumberRangeCallInspection : AbstractKotlinInspection() {
             }
 
 
-            val resolvedFunction = ourCall.resolvePsi() ?: return@callExpressionVisitor
+            val resolvedFunction = ourCall.resolveMainReference() ?: return@callExpressionVisitor
             val annotations: List<List<UAnnotation?>> = resolvedFunction.resolveAllParameterAnnotations()
             if (annotations.isEmpty()) {
                 return@callExpressionVisitor
@@ -83,7 +80,7 @@ class QuickNumberRangeCallInspection : AbstractKotlinInspection() {
             val argAnnotations = resolvedAnnotations.getOrNull(index)
             if (argAnnotations != null && argAnnotations.isNotEmpty() && ktValueArgument != null) {
                 val typeRange: RangeParser<*>? = RangeParser.parse(argAnnotations)
-                if (typeRange != null && !typeRange.validate(argAnnotations, ktValueArgument)) {
+                if (typeRange != null && !typeRange.isValid(argAnnotations, ktValueArgument)) {
                     holder.registerProblemSafe(
                         ktValueArgument,
                         typeRange.computeErrorMessage(argAnnotations, ktValueArgument)
@@ -107,7 +104,8 @@ fun PsiElement.resolveAllParameterAnnotations(externalAnnotationsManager: Extern
                 emptyList()
             }
         }
-        is KtLightMethod -> parameterList.getAllAnnotations(extManager)
+        is KtLightMethod -> this.reference?.resolve()?.resolveAllParameterAnnotations(externalAnnotationsManager)
+            ?: emptyList()
         is KtFunction -> valueParameters.getAllAnnotations(extManager)
         is PsiMethod -> parameterList.getAllAnnotations(extManager)
         else -> emptyList()

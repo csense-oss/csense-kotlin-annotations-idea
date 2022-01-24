@@ -1,14 +1,13 @@
 package csense.kotlin.annotations.idea.bll
 
 import org.jetbrains.kotlin.psi.*
-import org.jetbrains.kotlin.tools.projectWizard.core.*
 import org.jetbrains.uast.*
 
 //TODO parse / use
 //https://github.com/JetBrains/java-annotations/blob/master/java8/src/main/java/org/jetbrains/annotations/Range.java
 // and the android editions. from both packages (androidx.annotations & android.support.annotation)
 
-//Only assumtion: from and to
+//Only assumption: from and to
 sealed class RangeParser<T>(
     val allowDifferentArgumentTypesThanAnnotating: Boolean,
     val annotationNames: Set<String>,
@@ -28,7 +27,7 @@ sealed class RangeParser<T>(
     //whole numbers
     object ByteRangeParser : RangeParser<Byte>(
         false,
-        setOf("ByteLimit"), //range is from jetbrains annotations
+        setOf("ByteLimit"),
         Byte.MIN_VALUE,
         Byte.MAX_VALUE,
         listOf("Byte", "Byte?"),
@@ -40,7 +39,7 @@ sealed class RangeParser<T>(
 
     object ShortRangeParser : RangeParser<Short>(
         false,
-        setOf("ShortLimit"), //range is from jetbrains annotations
+        setOf("ShortLimit"),
         Short.MIN_VALUE,
         Short.MAX_VALUE,
         listOf("Short", "Short?"),
@@ -52,7 +51,7 @@ sealed class RangeParser<T>(
 
     object IntRangeParser : RangeParser<Int>(
         false,
-        setOf("IntLimit", "Range"), //range is from jetbrains annotations
+        setOf("IntLimit", "Range"),
         Int.MIN_VALUE,
         Int.MAX_VALUE,
         listOf("Int", "Int?"),
@@ -195,12 +194,12 @@ sealed class RangeParser<T>(
     }
 
 
-    fun validate(argAnnotations: List<UAnnotation?>, valueArgument: KtValueArgument): Boolean {
+    fun isValid(argAnnotations: List<UAnnotation?>, valueArgument: KtValueArgument): Boolean {
         val argumentExpression = valueArgument.getArgumentExpression() ?: return false
-        return validate(argAnnotations, argumentExpression)
+        return isValid(argAnnotations, argumentExpression)
     }
 
-    fun validate(argAnnotations: List<UAnnotation?>, argumentExpression: KtExpression): Boolean {
+    fun isValid(argAnnotations: List<UAnnotation?>, argumentExpression: KtExpression): Boolean {
         val annotation = argAnnotations.findThis() ?: return false
         val range = annotation.asRangePair(minValue, maxValue, parseValue) ?: return false
         val asUExpression = argumentExpression.toUElementOfType<UExpression>()

@@ -47,7 +47,7 @@ class ParameterLessConstructorRequriedInspection : AbstractKotlinInspection() {
         val extMgr = ExternalAnnotationsManager.getInstance(project)
         val annotations = ClassHierarchyAnnotationsCache.getClassHierarchyAnnotations(classOrObject, extMgr)
         if (!annotations.any { it.qualifiedName in parameterLessConstructorNames }) {
-            return@classOrObjectVisitor //do not do anymore work
+            return@classOrObjectVisitor
         }
         val allConstructors = classOrObject.secondaryConstructors + (classOrObject.primaryConstructor?.let { listOf(it) }
                 ?: emptyList())

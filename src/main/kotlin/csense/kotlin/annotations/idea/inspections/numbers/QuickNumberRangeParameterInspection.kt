@@ -2,8 +2,7 @@ package csense.kotlin.annotations.idea.inspections.numbers
 
 import com.intellij.codeHighlighting.*
 import com.intellij.codeInspection.*
-import csense.idea.base.UastKtPsi.*
-import csense.idea.base.annotations.*
+
 import csense.idea.base.bll.*
 import csense.idea.base.bll.kotlin.*
 import csense.kotlin.annotations.idea.*
@@ -14,8 +13,6 @@ import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.psi.psiUtil.*
 import org.jetbrains.kotlin.types.typeUtil.*
 import org.jetbrains.uast.*
-import kotlin.collections.getOrNull
-import kotlin.collections.isNotEmpty
 
 
 class QuickNumberRangeParameterInspection : AbstractKotlinInspection() {
@@ -90,7 +87,7 @@ class QuickNumberRangeParameterInspection : AbstractKotlinInspection() {
     fun validateAnnotationAndDefaultValue(param: KtParameter, annotations: List<UAnnotation?>, holder: ProblemsHolder) {
         val typeRange = RangeParser.parse(annotations) ?: return
         val expression = param.defaultValue ?: return
-        val isInvalid = !typeRange.validate(annotations, expression)
+        val isInvalid = !typeRange.isValid(annotations, expression)
         if (isInvalid) {
             holder.registerProblemSafe(
                 param,

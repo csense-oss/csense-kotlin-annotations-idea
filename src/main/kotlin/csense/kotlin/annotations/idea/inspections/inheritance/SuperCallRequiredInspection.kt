@@ -59,7 +59,7 @@ class SuperCallRequiredInspection : AbstractKotlinInspection() {
         
         val annotations = overridingFnc.resolveAllMethodAnnotationMppAnnotation(extMgr)
         if (!annotations.any { it.qualifiedName in superCallRequiredAnnotationNames }) {
-            return@namedFunctionVisitor //do not do anymore work
+            return@namedFunctionVisitor
         }
         holder.registerProblemSafe(
                 fnc.nameIdentifier ?: fnc,
