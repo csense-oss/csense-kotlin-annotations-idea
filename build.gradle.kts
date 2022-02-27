@@ -42,11 +42,20 @@ dependencies {
 tasks.getByName<org.jetbrains.intellij.tasks.PatchPluginXmlTask>("patchPluginXml") {
     changeNotes.set(
         """
+            There are a some known bugs, which will be fixed later. this is a "fix some bugs" release and to improve compatibility with eg. android studio.
       <ul>
         <li>Works with newer idea & android studios</li>
+        <li>Bug fixes</li>
       </ul>
       """
     )
+}
+
+tasks{
+
+    buildSearchableOptions {
+        enabled = false
+    }
 }
 
 tasks.getByName("check").dependsOn("dependencyCheckAnalyze")
