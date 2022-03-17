@@ -22,7 +22,8 @@ class InspectionProvider : InspectionToolProvider {
                 NoEscapeAssignmentInspection::class.java,
                 ParameterLessConstructorRequriedInspection::class.java,
                 SuperCallRequiredInspection::class.java,
-                PropertyMustBeConstantInspection::class.java
+                PropertyMustBeConstantInspection::class.java, 
+                RequiresAnnotationInspection::class.java
         )
     }
 }

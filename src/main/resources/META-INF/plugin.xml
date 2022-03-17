@@ -1,7 +1,7 @@
 <idea-plugin>
     <id>csense-idea.csense-kotlin-annotations</id>
-    <name>Csense kotlin annotations</name>
-    <vendor email="csenseoss@tvedesys.dk" url="http://www.tvedesys.dk/csenseoss">Csenseoss</vendor>
+    <name>Csense Kotlin Annotations</name>
+    <vendor email="csenseoss@tvedesys.dk" url="https://tvedesys.dk/csenseoss">Csense oss</vendor>
 
     <description><![CDATA[This plugin provides annotations based Statical analysis (SA) to help with
     <ul>
@@ -44,10 +44,12 @@
                 implementation="csense.kotlin.annotations.idea.externalAnnotations.NoEscapeExternalAnnotations"/>
         <!-- Ability to annotate ranges externally  -->
         <intentionAction>
-            <className>csense.kotlin.annotations.idea.externalAnnotations.ranges.DoubleLimitExternalAnnotations</className>
+            <className>csense.kotlin.annotations.idea.externalAnnotations.ranges.DoubleLimitExternalAnnotations
+            </className>
         </intentionAction>
         <intentionAction>
-            <className>csense.kotlin.annotations.idea.externalAnnotations.ranges.FloatLimitExternalAnnotations</className>
+            <className>csense.kotlin.annotations.idea.externalAnnotations.ranges.FloatLimitExternalAnnotations
+            </className>
         </intentionAction>
 
         <applicationService serviceInterface="csense.kotlin.annotations.idea.startup.StartupService"

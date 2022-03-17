@@ -1,15 +1,15 @@
 plugins {
     //https://plugins.gradle.org/plugin/org.jetbrains.intellij
-    id("org.jetbrains.intellij") version "1.3.1"
+    id("org.jetbrains.intellij") version "1.4.0"
     kotlin("jvm") version "1.6.10"
     java
     //https://github.com/jeremylong/DependencyCheck
-    id("org.owasp.dependencycheck") version "6.5.3"
+    id("org.owasp.dependencycheck") version "7.0.0"
 }
 
 
 group = "csense.kotlin"
-version = "0.8.0"
+version = "0.9.0"
 
 
 // See https://github.com/JetBrains/gradle-intellij-plugin/
@@ -28,13 +28,13 @@ repositories {
 }
 
 dependencies {
-    implementation("csense.kotlin:csense-kotlin-jvm:0.0.54")
+    implementation("csense.kotlin:csense-kotlin-jvm:0.0.55")
     implementation("csense.kotlin:csense-kotlin-annotations-jvm:0.0.50")
     implementation("csense.kotlin:csense-kotlin-datastructures-algorithms:0.0.41")
     implementation("csense.idea.base:csense-idea-base:0.1.41")
 
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.0")
-    testImplementation("csense.kotlin:csense-kotlin-tests:0.0.53")
+    testImplementation("csense.kotlin:csense-kotlin-tests:0.0.55")
     testImplementation("csense.idea.test:csense-idea-test:0.1.0")
 }
 
@@ -44,8 +44,8 @@ tasks.getByName<org.jetbrains.intellij.tasks.PatchPluginXmlTask>("patchPluginXml
         """
             There are a some known bugs, which will be fixed later. this is a "fix some bugs" release and to improve compatibility with eg. android studio.
       <ul>
-        <li>Works with newer idea & android studios</li>
-        <li>Bug fixes</li>
+        <li>Fixed weird issue (index out of bounds)</li>
+        <li>Fixed bugs with different things (eg bad type resolution etc)</li>
       </ul>
       """
     )

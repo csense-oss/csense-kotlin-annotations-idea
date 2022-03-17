@@ -8,13 +8,18 @@ import csense.idea.base.annotations.*
 import csense.idea.base.bll.*
 import csense.idea.base.bll.kotlin.*
 import csense.kotlin.annotations.idea.*
+import csense.kotlin.annotations.idea.analyzers.noEscape.*
 import csense.kotlin.annotations.idea.bll.*
 import org.jetbrains.kotlin.asJava.elements.*
+import org.jetbrains.kotlin.builtins.KotlinBuiltIns
+import org.jetbrains.kotlin.idea.caches.resolve.*
 import org.jetbrains.kotlin.idea.inspections.*
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.psi.psiUtil.*
+import org.jetbrains.kotlin.resolve.lazy.*
 import org.jetbrains.kotlin.resolve.lazy.descriptors.*
 import org.jetbrains.kotlin.types.*
+import org.jetbrains.kotlin.types.typeUtil.*
 import org.jetbrains.uast.*
 
 
@@ -56,11 +61,12 @@ class QuickNumberRangeCallInspection : AbstractKotlinInspection() {
     ): KtVisitorVoid {
         return callExpressionVisitor { ourCall ->
             //we look at value arguments
-            val haveAnyNumbers = ourCall.anyDescendantOfType<KtConstantExpression> { it.isNumberType() }
+            val haveAnyNumbers = ourCall.anyDescendantOfType<KtConstantExpression> {
+                it.resolveType()?.isPrimitiveNumberOrNullableType() == true
+            }
             if (!haveAnyNumbers) {
                 return@callExpressionVisitor //we do not track fully.that would not be fast.
             }
-
 
             val resolvedFunction = ourCall.resolveMainReference() ?: return@callExpressionVisitor
             val annotations: List<List<UAnnotation?>> = resolvedFunction.resolveAllParameterAnnotations()
@@ -126,3 +132,5 @@ fun TypeProjection.resolveAnnotation(): List<UAnnotation> {
         annotationDescription?.annotationEntry.toUElement(UAnnotation::class.java)
     }
 }
+
+fun KtExpression.resolveType(): KotlinType? = this.analyze(BodyResolveMode.PARTIAL).getType(this)

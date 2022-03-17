@@ -114,8 +114,10 @@ fun KtCallExpression.foreachParameterWithResolvedArgument(onParameter: (KtValueA
 
     this.valueArguments.forEachIndexed { index, param ->
         //find index .. TODO this is not valid always
-        val resolvedParm = resolvedFunction.valueParameters[index]
-        onParameter(param, resolvedParm)
+        val resolvedParm = resolvedFunction.valueParameters.getOrNull(index)
+        if (resolvedParm != null) {
+            onParameter(param, resolvedParm)
+        }
     }
 
 }

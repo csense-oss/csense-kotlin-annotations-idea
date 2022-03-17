@@ -1,10 +1,9 @@
-package csense.kotlin.annotations.idea.inheritance
+package csense.kotlin.annotations.idea.inspections.inheritance
 
 import csense.idea.kotlin.test.*
-import csense.kotlin.annotations.idea.inspections.inheritance.*
 import org.junit.*
 
-class ParameterLessConstructorRequriedTests: KotlinLightCodeInsightFixtureTestCaseJunit4() {
+class ParameterLessConstructorRequriedInspectionTest: KotlinLightCodeInsightFixtureTestCaseJunit4() {
     override fun getTestDataPath(): String {
         return "src/test/testData/ParameterLessConstructorRequired/"
     }

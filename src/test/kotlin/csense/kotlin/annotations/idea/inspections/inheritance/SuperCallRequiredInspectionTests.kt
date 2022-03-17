@@ -1,4 +1,4 @@
-package csense.kotlin.annotations.idea.inheritance
+package csense.kotlin.annotations.idea.inspections.inheritance
 
 import csense.idea.kotlin.test.*
 import csense.kotlin.annotations.idea.inspections.inheritance.*
