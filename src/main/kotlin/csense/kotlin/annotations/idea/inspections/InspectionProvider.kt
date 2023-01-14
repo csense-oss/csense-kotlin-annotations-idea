@@ -14,9 +14,9 @@ class InspectionProvider : InspectionToolProvider {
         StartupService.instance
         return arrayOf(
                 QuickThreadingCallInspection::class.java,
-                QuickNumberRangeCallInspection::class.java,
+                QuickNumberRangeParameterCallInspection::class.java,
                 QuickNumberRangeTypeValueInspection::class.java,
-                QuickNumberRangeParameterInspection::class.java,
+                QuickNumberRangeDefaultParameterInspection::class.java,
                 QuickNumberRangeVariableInspection::class.java,
                 NoEscapeInspection::class.java,
                 NoEscapeAssignmentInspection::class.java,

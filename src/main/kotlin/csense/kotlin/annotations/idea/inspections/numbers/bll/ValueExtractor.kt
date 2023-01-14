@@ -1,4 +1,4 @@
-package csense.kotlin.annotations.idea.bll
+package csense.kotlin.annotations.idea.inspections.numbers.bll
 
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.uast.*

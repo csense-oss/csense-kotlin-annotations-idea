@@ -5,9 +5,9 @@ import com.intellij.codeInsight.*
 import com.intellij.codeInspection.*
 import csense.idea.base.annotations.*
 import csense.idea.base.bll.*
-import csense.idea.base.bll.kotlin.*
 import csense.kotlin.annotations.idea.*
 import csense.kotlin.annotations.idea.bll.*
+import csense.kotlin.annotations.idea.inspections.numbers.bll.*
 import org.jetbrains.kotlin.idea.inspections.*
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.types.typeUtil.*
@@ -50,8 +50,7 @@ class QuickNumberRangeVariableInspection : AbstractKotlinInspection() {
         isOnTheFly: Boolean
     ): KtVisitorVoid {
         return propertyVisitor { prop ->
-
-            val isNumber = prop.resolveType()?.isPrimitiveNumberOrNullableType() == true
+            val isNumber = prop.resolveType2()?.isPrimitiveNumberOrNullableType() == true
             if (!isNumber) {
                 return@propertyVisitor
             }
@@ -60,14 +59,14 @@ class QuickNumberRangeVariableInspection : AbstractKotlinInspection() {
             val rangeParser = RangeParser.parse(annotations) ?: return@propertyVisitor
             val isInvalid = !rangeParser.isValid(annotations, defaultExpression)
             if (isInvalid) {
-                holder.registerProblemSafe(
-                    defaultExpression,
-                    rangeParser.computeErrorMessage(annotations, defaultExpression)
-                )
+                val potentialErrorMessage = rangeParser.computeErrorMessage(annotations, defaultExpression)
+                if (potentialErrorMessage != null) {
+                    holder.registerProblemSafe(
+                        psiElement = defaultExpression,
+                        descriptionTemplate = potentialErrorMessage
+                    )
+                }
             }
-
         }
     }
-
-
 }

@@ -11,7 +11,7 @@ class CsenseRangeCallTest : KotlinLightCodeInsightFixtureTestCaseJunit4() {
 
     @Before
     fun setup() {
-        myFixture.enableInspections(QuickNumberRangeCallInspection())
+        myFixture.enableInspections(QuickNumberRangeParameterCallInspection())
         myFixture.allowTreeAccessForAllFiles()
     }
 
@@ -48,6 +48,11 @@ class CsenseRangeCallTest : KotlinLightCodeInsightFixtureTestCaseJunit4() {
     @Test
     fun csenseShortLimit() {
         myFixture.testHighlighting("csenseShortLimit.kt")
+    }
+    
+    @Test
+    fun testCsenseTest(){
+        myFixture.testHighlighting("TestCsenseTest.kt")
     }
 
 }

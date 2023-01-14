@@ -1,30 +1,20 @@
-package csense.kotlin.annotations.idea.analyzers.RequiresAnnotation
+package csense.kotlin.annotations.idea.analyzers.requiresAnnotation
 
 import com.intellij.codeInsight.*
 import com.intellij.psi.*
-import com.intellij.psi.impl.source.PsiClassReferenceType
+import com.intellij.psi.impl.source.*
 import csense.idea.base.annotations.*
 import csense.idea.base.bll.kotlin.*
 import csense.idea.base.bll.psi.*
-import csense.idea.base.bll.uast.*
-import csense.idea.base.mpp.*
 import csense.idea.base.uastKtPsi.*
-import csense.idea.base.uastKtPsi.asT
-import csense.idea.base.uastKtPsi.getKotlinFqNameString
 import csense.kotlin.annotations.idea.analyzers.*
-import csense.kotlin.annotations.idea.bll.*
-import csense.kotlin.extensions.*
 import csense.kotlin.extensions.collections.list.*
 import csense.kotlin.extensions.collections.set.*
 import csense.kotlin.specificExtensions.string.*
-import org.eclipse.jdt.internal.compiler.lookup.SourceTypeCollisionException
 import org.jetbrains.kotlin.asJava.classes.*
 import org.jetbrains.kotlin.asJava.elements.*
 import org.jetbrains.kotlin.psi.*
-import org.jetbrains.kotlin.utils.addToStdlib.*
 import org.jetbrains.uast.*
-import org.jetbrains.uast.kotlin.*
-import kotlin.reflect.*
 
 object RequiresAnnotationAnalyzer : Analyzer<KtClassOrObject> {
     //for now do a bottom up ((slower?) than top down?)

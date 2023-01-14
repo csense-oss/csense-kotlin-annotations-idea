@@ -4,35 +4,38 @@ import com.intellij.codeHighlighting.*
 import com.intellij.codeInspection.*
 
 import csense.idea.base.bll.*
-import csense.idea.base.bll.kotlin.*
 import csense.kotlin.annotations.idea.*
 import csense.kotlin.annotations.idea.bll.*
+import csense.kotlin.annotations.idea.inspections.numbers.bll.*
 import csense.kotlin.extensions.collections.*
+import org.jetbrains.kotlin.descriptors.*
+import org.jetbrains.kotlin.idea.caches.resolve.*
 import org.jetbrains.kotlin.idea.inspections.*
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.psi.psiUtil.*
+import org.jetbrains.kotlin.types.*
 import org.jetbrains.kotlin.types.typeUtil.*
 import org.jetbrains.uast.*
 
 
-class QuickNumberRangeParameterInspection : AbstractKotlinInspection() {
+class QuickNumberRangeDefaultParameterInspection : AbstractKotlinInspection() {
 
     override fun getDisplayName(): String {
-        return "NumberFunctionRangeInspector"
+        return "NumberFunctionRangeDefaultValueInspector"
     }
 
     override fun getStaticDescription(): String {
         return """
-            
+            Validates if there are limits on a given parameter that default arguments obey them.
         """.trimIndent()
     }
 
     override fun getDescriptionFileName(): String {
-        return "more desc ? "
+        return "Validates if there are limits on a given parameter that default arguments obey them."
     }
 
     override fun getShortName(): String {
-        return "NumberFunctionRangeInspection"
+        return "NumberFunctionRangeDefaultValueInspector"
     }
 
     override fun getGroupDisplayName(): String {
@@ -52,34 +55,15 @@ class QuickNumberRangeParameterInspection : AbstractKotlinInspection() {
         isOnTheFly: Boolean
     ): KtVisitorVoid {
         return namedFunctionVisitor { function ->
-            //we look at value arguments
-            //TODO better test for numbers
-            val numberParameters =
-                function.valueParameters.filter {
-                    it.resolveType()?.isPrimitiveNumberOrNullableType() == true &&
-                            it.hasDefaultValue()
+            val validArguments: List<Pair<KtParameter, List<UAnnotation>>> = function.parametersWithAnnotations(
+                filter = { parameter, annotations ->
+                    parameter.isNumberType()
                 }
-            if (numberParameters.isEmpty()) {
-                return@namedFunctionVisitor //we do not track fully.that would not be fast.
-            }
+            )
 
 
-            val annotations: List<List<UAnnotation?>> = function.resolveAllParameterAnnotations()
-            if (annotations.isEmpty()) {
-                return@namedFunctionVisitor
-            }
-            numberParameters.forEach {
-                val index = it.parameterIndex()
-
-                if (!annotations.isIndexValid(index)) {
-                    return@forEach
-
-                }
-                val annotationsForParam = annotations[index]
-                if (annotationsForParam.isEmpty()) {
-                    return@forEach
-                }
-                validateAnnotationAndDefaultValue(it, annotationsForParam, holder)
+            validArguments.forEach {
+                validateAnnotationAndDefaultValue(param = it.first, annotations = it.second, holder = holder)
             }
         }
     }
@@ -89,11 +73,15 @@ class QuickNumberRangeParameterInspection : AbstractKotlinInspection() {
         val expression = param.defaultValue ?: return
         val isInvalid = !typeRange.isValid(annotations, expression)
         if (isInvalid) {
-            holder.registerProblemSafe(
-                param,
-                typeRange.computeErrorMessage(annotations, expression)
-            )
+            val potentialErrorMessage = typeRange.computeErrorMessage(annotations, expression)
+            if (potentialErrorMessage != null) {
+                holder.registerProblemSafe(
+                    psiElement = param,
+                    descriptionTemplate = potentialErrorMessage
+                )
+            }
         }
     }
+
 
 }

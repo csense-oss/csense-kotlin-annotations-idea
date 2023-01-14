@@ -4,7 +4,7 @@ import com.intellij.codeHighlighting.*
 import com.intellij.codeInspection.*
 import csense.kotlin.annotations.idea.*
 import csense.kotlin.annotations.idea.analyzers.*
-import csense.kotlin.annotations.idea.analyzers.RequiresAnnotation.*
+import csense.kotlin.annotations.idea.analyzers.requiresAnnotation.*
 import org.jetbrains.kotlin.idea.inspections.*
 import org.jetbrains.kotlin.psi.*
 
