@@ -20,6 +20,7 @@ intellij {
 
 repositories {
     mavenCentral()
+    mavenLocal()
     maven {
         url = uri("https://pkgs.dev.azure.com/csense-oss/csense-oss/_packaging/csense-oss/maven/v1")
         name = "csense-oss"
@@ -30,7 +31,7 @@ dependencies {
     implementation("csense.kotlin:csense-kotlin-jvm:0.0.59")
     implementation("csense.kotlin:csense-kotlin-annotations-jvm:0.0.41")
     implementation("csense.kotlin:csense-kotlin-datastructures-algorithms:0.0.41")
-    implementation("csense.idea.base:csense-idea-base:0.1.50")
+    implementation("csense.idea.base:csense-idea-base:0.1.60")
 
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4")
     testImplementation("csense.kotlin:csense-kotlin-tests:0.0.59")
@@ -53,7 +54,7 @@ tasks.getByName("check").dependsOn("dependencyCheckAnalyze")
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     kotlinOptions.jvmTarget = "11"
-    kotlinOptions.freeCompilerArgs = listOf("-progressive")
+    kotlinOptions.freeCompilerArgs = listOf("-progressive","-opt-in=kotlin.contracts.ExperimentalContracts")
 }
 
 tasks.withType<JavaCompile> {

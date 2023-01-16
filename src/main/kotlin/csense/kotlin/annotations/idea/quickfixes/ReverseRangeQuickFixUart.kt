@@ -4,7 +4,6 @@ import com.intellij.codeInspection.*
 import com.intellij.openapi.project.*
 import com.intellij.util.*
 import csense.kotlin.annotations.idea.*
-import csense.kotlin.annotations.idea.bll.*
 import csense.kotlin.annotations.idea.inspections.numbers.bll.*
 import org.jetbrains.kotlin.idea.util.application.*
 import org.jetbrains.kotlin.psi.*
@@ -33,7 +32,7 @@ class ReverseRangeQuickFixUart(
             return
         }
         //swap args
-        project.executeWriteCommand("swap args") {
+        project.executeWriteCommand("Swap Args") {
             try {
                 values.first().replace(values.last().copy())
                 values.last().replace(values.first().copy())

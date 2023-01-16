@@ -13,13 +13,13 @@ class NoEscapeAssignmentInspection : AbstractKotlinInspection() {
         return "NoEscapeAssignmentInspection"
     }
     
-    override fun getStaticDescription(): String? {
+    override fun getStaticDescription(): String {
         return """
             When a given parameter is marked as "NoEscape" , then this inspection prevents / errors out when you try to assign it to a variable.
         """.trimIndent()
     }
     
-    override fun getDescriptionFileName(): String? {
+    override fun getDescriptionFileName(): String {
         return "more desc ? "
     }
     

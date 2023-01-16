@@ -6,27 +6,30 @@ import csense.idea.base.bll.kotlin.*
 import csense.kotlin.annotations.idea.*
 import csense.kotlin.annotations.idea.inspections.numbers.bll.*
 import org.jetbrains.kotlin.idea.inspections.*
+import org.jetbrains.kotlin.lexer.*
 import org.jetbrains.kotlin.psi.*
+import org.jetbrains.kotlin.types.*
+import org.jetbrains.kotlin.types.typeUtil.*
 
 
-class QuickNumberRangeParameterCallInspection : AbstractKotlinInspection() {
+class QuickNumberRangeVariableAssignmentInspection : AbstractKotlinInspection() {
 
     override fun getDisplayName(): String {
-        return "NumberRangeParameterCallInspector"
+        return "NumberVariableRangeInspector"
     }
 
     override fun getStaticDescription(): String {
         return """
-            For when ranges are specifed for a given number but the parameter is not in that range
+            Validates that the initialization of a number variable (with limits) are obeyed.
         """.trimIndent()
     }
 
     override fun getDescriptionFileName(): String {
-        return "For when ranges are specifed for a given number but the parameter is not in that range"
+        return "Validates that the initialization of a number variable (with limits) are obeyed."
     }
 
     override fun getShortName(): String {
-        return "NumberRangeParameterCallInspector"
+        return "NumberVariableRangeInspection"
     }
 
     override fun getGroupDisplayName(): String {
@@ -44,10 +47,16 @@ class QuickNumberRangeParameterCallInspection : AbstractKotlinInspection() {
     override fun buildVisitor(
         holder: ProblemsHolder,
         isOnTheFly: Boolean
-    ): KtVisitorVoid = callExpressionVisitor { ourCall ->
-        val function = ourCall.resolveMainReferenceAsKtFunction() ?: return@callExpressionVisitor
-        function.validateNumberRangeForCallArguments(
-            forCall = ourCall,
+    ): KtVisitorVoid = binaryExpressionVisitor { expression ->
+        if (expression.isNotAssignment) {
+            return@binaryExpressionVisitor
+        }
+        val lhs = expression.left ?: return@binaryExpressionVisitor
+        val rhs = expression.right ?: return@binaryExpressionVisitor
+        val reference = lhs.resolveAsReferenceToPropertyOrValueParameter() ?: return@binaryExpressionVisitor
+
+        reference.declaration.validateNumberRangeFor(
+            expression = rhs,
             holder = holder
         )
     }

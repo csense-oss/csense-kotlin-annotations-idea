@@ -159,15 +159,15 @@ sealed class RangeParser<T>(
         }
     }
 
-    fun isThisKt(annotations: List<KtAnnotationEntry?>): Boolean = annotations.findThis() != null
+    fun isThisKt(annotations: List<KtAnnotationEntry?>): Boolean = annotations.findThisRangeAnnotation() != null
 
-    fun List<KtAnnotationEntry?>.findThis(): KtAnnotationEntry? = find {
+    fun List<KtAnnotationEntry?>.findThisRangeAnnotation(): KtAnnotationEntry? = find {
         it != null && it.valueArguments.size <= 2 && annotationNames.contains(it.shortName?.asString())
     }
 
-    fun isThis(values: List<UAnnotation?>): Boolean = values.findThis() != null
+    fun isThis(values: List<UAnnotation?>): Boolean = values.findThisRangeAnnotation() != null
 
-    fun List<UAnnotation?>.findThis(): UAnnotation? = find {
+    fun List<UAnnotation?>.findThisRangeAnnotation(): UAnnotation? = find {
         it != null && it.attributeValues.size <= 2 && annotationNames.contains(
             it.namePsiElement?.text ?: ""
         )
@@ -182,7 +182,7 @@ sealed class RangeParser<T>(
     }
 
     fun computeErrorMessage(argAnnotations: List<UAnnotation?>, expression: KtExpression): String? {
-        val annotation = argAnnotations.findThis() ?: run {
+        val annotation = argAnnotations.findThisRangeAnnotation() ?: run {
             // "(error: could not find this)"
             return@computeErrorMessage null
         }
@@ -202,13 +202,29 @@ sealed class RangeParser<T>(
     }
 
 
-    fun validateOrError(annotations: List<KtAnnotationEntry>, expression: KtExpression): String? {
-        val genericError = "[failed to parse]"
-        val numberAnnotation = annotations.findThis() ?: return genericError
-        val annotationRange = numberAnnotation.asRangePair(minValue, maxValue, parseValueKt) ?: return genericError
-        val parsedArgumentValue = parseValueKt(expression) ?: return genericError
+    fun validateOrError(
+        annotations: List<KtAnnotationEntry>,
+        mayBeNull: Boolean,
+        valueExpression: KtExpression
+    ): String? {
 
-        if (!isInRange(annotationRange.from, annotationRange.to, parsedArgumentValue)) {
+        val genericError = "[failed to parse]"
+        val numberAnnotation = annotations.findThisRangeAnnotation() ?: return genericError
+        val annotationRange = numberAnnotation.asRangePair(minValue, maxValue, parseValueKt) ?: return genericError
+        val parsedArgumentValue = parseValueKt(valueExpression)
+        if (parsedArgumentValue == null) {
+            return when (mayBeNull) {
+                true -> null
+                false -> "Expected not null value(should be a compile error)"
+            }
+        }
+
+        if (!isInRange(
+                annotationRange.from,
+                annotationRange.to,
+                parsedArgumentValue
+            )
+        ) {
             @Language("html")
             val errorMessage = """
                 |<html><b color="#FF846A">$parsedArgumentValue</b> is not in range:[ <b color="#3FC8CA">${annotationRange.from}</b> ; <b color="#41CA3F">${annotationRange.to}</b> ]</html>
@@ -224,7 +240,7 @@ sealed class RangeParser<T>(
     }
 
     fun isValid(argAnnotations: List<UAnnotation?>, argumentExpression: KtExpression): Boolean {
-        val annotation = argAnnotations.findThis() ?: return false
+        val annotation = argAnnotations.findThisRangeAnnotation() ?: return false
         val range = annotation.asRangePair(minValue, maxValue, parseValue) ?: return false
         val asUExpression = argumentExpression.toUElementOfType<UExpression>()
             ?: return false
@@ -236,13 +252,13 @@ sealed class RangeParser<T>(
     }
 
     fun computeInvalidRangeMessageKt(argAnnotations: List<KtAnnotationEntry?>): String? {
-        val annotation = argAnnotations.findThis() ?: return null
+        val annotation = argAnnotations.findThisRangeAnnotation() ?: return null
         val range = annotation.asRangePair(minValue, maxValue, parseValueKt) ?: return null
         return range.computeInvalidMessage()
     }
 
     fun computeInvalidRangeMessage(argAnnotations: List<UAnnotation?>): String? {
-        val annotation = argAnnotations.findThis() ?: return null
+        val annotation = argAnnotations.findThisRangeAnnotation() ?: return null
         val range = annotation.asRangePair(minValue, maxValue, parseValue) ?: return null
         return range.computeInvalidMessage()
     }
@@ -258,22 +274,22 @@ sealed class RangeParser<T>(
     }
 
     fun isRangeReveresed(argAnnotations: List<UAnnotation?>): Boolean {
-        val annotation = argAnnotations.findThis() ?: return false
+        val annotation = argAnnotations.findThisRangeAnnotation() ?: return false
         val range = annotation.asRangePair(minValue, maxValue, parseValue) ?: return false
         return isGreaterThan(range.from, range.to)
     }
 
     fun isRangeReveresedKt(argAnnotations: List<KtAnnotationEntry?>): Boolean {
-        val anno = argAnnotations.findThis() ?: return false
+        val anno = argAnnotations.findThisRangeAnnotation() ?: return false
         val range = anno.asRangePair(minValue, maxValue, parseValueKt) ?: return false
         return isGreaterThan(range.from, range.to)
     }
 
     fun findAnnotation(elements: List<UAnnotation?>): UAnnotation? =
-        elements.findThis()
+        elements.findThisRangeAnnotation()
 
     fun findAnnotationKt(elements: List<KtAnnotationEntry?>): KtAnnotationEntry? =
-        elements.findThis()
+        elements.findThisRangeAnnotation()
 
 
 }

@@ -11,13 +11,13 @@ class NoEscapeInspection : AbstractKotlinInspection() {
         return "NoEscapeInspection"
     }
     
-    override fun getStaticDescription(): String? {
+    override fun getStaticDescription(): String {
         return """
             
         """.trimIndent()
     }
     
-    override fun getDescriptionFileName(): String? {
+    override fun getDescriptionFileName(): String {
         return "more desc ? "
     }
     

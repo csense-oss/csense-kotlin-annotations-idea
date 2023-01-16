@@ -2,30 +2,31 @@ package csense.kotlin.annotations.idea.inspections.numbers
 
 import com.intellij.codeHighlighting.*
 import com.intellij.codeInspection.*
+import csense.idea.base.bll.kotlin.*
+import csense.idea.base.visitors.*
 import csense.kotlin.annotations.idea.*
 import csense.kotlin.annotations.idea.inspections.numbers.bll.*
 import org.jetbrains.kotlin.idea.inspections.*
 import org.jetbrains.kotlin.psi.*
 
-
-class QuickNumberRangeDefaultParameterInspection : AbstractKotlinInspection() {
+class QuickNumberRangeTypeValueConstructorInspection : AbstractKotlinInspection() {
 
     override fun getDisplayName(): String {
-        return "NumberFunctionRangeDefaultValueInspector"
+        return "NumberRangeTypeConstructorValueInspector"
     }
 
     override fun getStaticDescription(): String {
         return """
-            Validates if there are limits on a given parameter that default arguments obey them.
+            Validates number ranges for constructors
         """.trimIndent()
     }
 
     override fun getDescriptionFileName(): String {
-        return "Validates if there are limits on a given parameter that default arguments obey them."
+        return "Validates number ranges for constructors"
     }
 
     override fun getShortName(): String {
-        return "NumberFunctionRangeDefaultValueInspector"
+        return "NumberRangeTypeConstructorValueInspector"
     }
 
     override fun getGroupDisplayName(): String {
@@ -43,8 +44,10 @@ class QuickNumberRangeDefaultParameterInspection : AbstractKotlinInspection() {
     override fun buildVisitor(
         holder: ProblemsHolder,
         isOnTheFly: Boolean
-    ): KtVisitorVoid = namedFunctionVisitor { function ->
-        function.valueParameters.validateValueParameters(holder)
+    ): KtVisitorVoid = constructorVisitor {
+        it.valueParameters.validateValueParameters(holder)
+        if (it is KtSecondaryConstructor) {
+            it.getDelegationCallOrNull()?.validateDelegationCall(holder)
+        }
     }
 }
-

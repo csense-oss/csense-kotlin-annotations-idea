@@ -16,13 +16,13 @@ class SuperCallRequiredInspection : AbstractKotlinInspection() {
         return "SuperCallRequiredInspection"
     }
     
-    override fun getStaticDescription(): String? {
+    override fun getStaticDescription(): String {
         return """
             
         """.trimIndent()
     }
     
-    override fun getDescriptionFileName(): String? {
+    override fun getDescriptionFileName(): String {
         return "more desc ? "
     }
     

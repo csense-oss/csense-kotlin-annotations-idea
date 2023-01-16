@@ -6,24 +6,28 @@ import csense.kotlin.annotations.idea.inspections.numbers.*
 import csense.kotlin.annotations.idea.inspections.properties.*
 import csense.kotlin.annotations.idea.inspections.sideeffect.*
 import csense.kotlin.annotations.idea.inspections.threading.*
-import csense.kotlin.annotations.idea.startup.*
 
 class InspectionProvider : InspectionToolProvider {
 
-    override fun getInspectionClasses(): Array<Class<out LocalInspectionTool>> {
-        StartupService.instance
-        return arrayOf(
-                QuickThreadingCallInspection::class.java,
-                QuickNumberRangeParameterCallInspection::class.java,
-                QuickNumberRangeTypeValueInspection::class.java,
-                QuickNumberRangeDefaultParameterInspection::class.java,
-                QuickNumberRangeVariableInspection::class.java,
-                NoEscapeInspection::class.java,
-                NoEscapeAssignmentInspection::class.java,
-                ParameterLessConstructorRequriedInspection::class.java,
-                SuperCallRequiredInspection::class.java,
-                PropertyMustBeConstantInspection::class.java, 
-                RequiresAnnotationInspection::class.java
-        )
-    }
+    override fun getInspectionClasses(): Array<Class<out LocalInspectionTool>> =
+        quickNumberInspections +
+                arrayOf(
+                    QuickThreadingCallInspection::class.java,
+
+                    NoEscapeInspection::class.java,
+                    NoEscapeAssignmentInspection::class.java,
+                    ParameterLessConstructorRequriedInspection::class.java,
+                    SuperCallRequiredInspection::class.java,
+                    PropertyMustBeConstantInspection::class.java,
+                    RequiresAnnotationInspection::class.java
+                )
+
+    private val quickNumberInspections: Array<Class<out LocalInspectionTool>> = arrayOf(
+        QuickNumberRangeParameterCallInspection::class.java,
+        QuickNumberRangeTypeValueInspection::class.java,
+        QuickNumberRangeTypeValueConstructorInspection::class.java,
+        QuickNumberRangeDefaultParameterInspection::class.java,
+        QuickNumberRangeVariableDeclarationInspection::class.java,
+        QuickNumberRangeVariableAssignmentInspection::class.java
+    )
 }

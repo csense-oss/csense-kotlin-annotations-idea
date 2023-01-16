@@ -32,14 +32,14 @@ class QuickThreadingCallInspection : AbstractKotlinInspection() {
         return "ThreadingInspector"
     }
 
-    override fun getStaticDescription(): String? {
+    override fun getStaticDescription(): String {
         return """
             This inspection provides highlighting for mixing of ui / background designed work.
             In most ui frameworks you are only allowed to update the ui from a specific thread, thus this can help with that.
         """.trimIndent()
     }
 
-    override fun getDescriptionFileName(): String? {
+    override fun getDescriptionFileName(): String {
         return "more desc ? "
     }
 
@@ -60,8 +60,8 @@ class QuickThreadingCallInspection : AbstractKotlinInspection() {
     }
 
     override fun buildVisitor(
-            holder: ProblemsHolder,
-            isOnTheFly: Boolean
+        holder: ProblemsHolder,
+        isOnTheFly: Boolean
     ): KtVisitorVoid {
         return namedFunctionVisitor { ourCallFunction: KtNamedFunction ->
             val result = logMeasureTimeInMillis {
