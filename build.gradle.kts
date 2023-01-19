@@ -3,7 +3,7 @@ plugins {
     id("org.jetbrains.intellij") version "1.12.0"
     kotlin("jvm") version "1.8.0"
     //https://github.com/jeremylong/DependencyCheck
-    id("org.owasp.dependencycheck") version "7.4.4"
+    id("org.owasp.dependencycheck") version "8.0.0"
 }
 
 
@@ -31,11 +31,12 @@ dependencies {
     implementation("csense.kotlin:csense-kotlin-jvm:0.0.59")
     implementation("csense.kotlin:csense-kotlin-annotations-jvm:0.0.41")
     implementation("csense.kotlin:csense-kotlin-datastructures-algorithms:0.0.41")
+
     implementation("csense.idea.base:csense-idea-base:0.1.60")
 
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.4")
     testImplementation("csense.kotlin:csense-kotlin-tests:0.0.59")
-    testImplementation("csense.idea.test:csense-idea-test:0.2.0")
+    testImplementation("csense.idea.test:csense-idea-test:0.3.0")
 }
 
 
@@ -43,8 +44,7 @@ tasks.getByName<org.jetbrains.intellij.tasks.PatchPluginXmlTask>("patchPluginXml
     changeNotes.set(
         """
       <ul>
-        <li>Fixed weird issue (index out of bounds)</li>
-        <li>Fixed bugs with different things (eg bad type resolution etc)</li>
+        <li>Overhaul of code & quality - should work across AS, Intellij IDEA, jvm & MPP projects alike.</li>
       </ul>
       """
     )
@@ -53,11 +53,18 @@ tasks.getByName<org.jetbrains.intellij.tasks.PatchPluginXmlTask>("patchPluginXml
 tasks.getByName("check").dependsOn("dependencyCheckAnalyze")
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-    kotlinOptions.jvmTarget = "11"
-    kotlinOptions.freeCompilerArgs = listOf("-progressive","-opt-in=kotlin.contracts.ExperimentalContracts")
+    kotlinOptions.freeCompilerArgs = listOf("-progressive", "-opt-in=kotlin.contracts.ExperimentalContracts")
 }
 
-tasks.withType<JavaCompile> {
-    targetCompatibility = "11"
-    sourceCompatibility = "11"
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(11))
+    }
+
+}
+
+kotlin {
+    jvmToolchain {
+        languageVersion.set(JavaLanguageVersion.of(11))
+    }
 }

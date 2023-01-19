@@ -3,13 +3,11 @@ package csense.kotlin.annotations.idea.inspections.numbers
 import com.intellij.codeHighlighting.*
 import com.intellij.codeInspection.*
 import csense.idea.base.bll.kotlin.*
+import csense.idea.base.bll.kotlin.models.*
 import csense.kotlin.annotations.idea.*
 import csense.kotlin.annotations.idea.inspections.numbers.bll.*
 import org.jetbrains.kotlin.idea.inspections.*
-import org.jetbrains.kotlin.lexer.*
 import org.jetbrains.kotlin.psi.*
-import org.jetbrains.kotlin.types.*
-import org.jetbrains.kotlin.types.typeUtil.*
 
 
 class QuickNumberRangeVariableAssignmentInspection : AbstractKotlinInspection() {
@@ -57,7 +55,19 @@ class QuickNumberRangeVariableAssignmentInspection : AbstractKotlinInspection() 
 
         reference.declaration.validateNumberRangeFor(
             expression = rhs,
+            isVarArg = reference.isVarArg(),
+            typeReference = reference.typeReference(),
             holder = holder
         )
     }
+}
+
+fun KtParameterOrValueParameter.isVarArg(): Boolean = when (this) {
+    is KtParameterOrValueParameter.Property -> false
+    is KtParameterOrValueParameter.ValueParameter -> parameter.isVarArg
+}
+
+fun KtParameterOrValueParameter.typeReference(): KtTypeReference? = when (this) {
+    is KtParameterOrValueParameter.Property -> property.typeReference
+    is KtParameterOrValueParameter.ValueParameter -> parameter.typeReference
 }

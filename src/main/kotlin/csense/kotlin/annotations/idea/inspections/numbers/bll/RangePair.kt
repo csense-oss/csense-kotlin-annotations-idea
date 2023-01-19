@@ -4,9 +4,9 @@ import org.jetbrains.kotlin.psi.*
 import org.jetbrains.uast.*
 
 
-data class RangePair<T>(val from: T, val to: T)
+data class RangePair<T: Number>(val from: T, val to: T)
 
-fun <T> UAnnotation.asRangePair(
+fun <T: Number> UAnnotation.asRangePair(
     minValue: T,
     maxValue: T,
     parseValue: (UExpression) -> T?
@@ -41,7 +41,7 @@ fun <T> UAnnotation.asRangePair(
     return RangePair(fromValue, toValue)
 }
 
-fun <T> KtAnnotationEntry.asRangePair(
+fun <T: Number> KtAnnotationEntry.asRangePair(
     minValue: T,
     maxValue: T,
     parseValue: (KtExpression) -> T?

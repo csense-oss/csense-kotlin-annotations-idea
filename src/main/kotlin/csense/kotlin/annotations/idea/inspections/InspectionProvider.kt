@@ -28,6 +28,7 @@ class InspectionProvider : InspectionToolProvider {
         QuickNumberRangeTypeValueConstructorInspection::class.java,
         QuickNumberRangeDefaultParameterInspection::class.java,
         QuickNumberRangeVariableDeclarationInspection::class.java,
-        QuickNumberRangeVariableAssignmentInspection::class.java
+        QuickNumberRangeVariableAssignmentInspection::class.java,
+        QuickNumberRangeFunctionReturnInspection::class.java
     )
 }

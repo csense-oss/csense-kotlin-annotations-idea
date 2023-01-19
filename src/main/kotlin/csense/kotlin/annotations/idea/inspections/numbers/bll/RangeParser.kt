@@ -1,6 +1,9 @@
 package csense.kotlin.annotations.idea.inspections.numbers.bll
 
+import csense.idea.base.bll.kotlin.*
+import csense.kotlin.annotations.idea.*
 import org.intellij.lang.annotations.Language
+import org.jetbrains.kotlin.idea.intentions.branchedTransformations.*
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.uast.*
 
@@ -9,7 +12,7 @@ import org.jetbrains.uast.*
 // and the android editions. from both packages (androidx.annotations & android.support.annotation)
 
 //Only assumption: from and to
-sealed class RangeParser<T>(
+sealed class RangeParser<T : Number>(
     val allowDifferentArgumentTypesThanAnnotating: Boolean,
     val annotationNames: Set<String>,
     val minValue: T,
@@ -157,6 +160,7 @@ sealed class RangeParser<T>(
             DoubleRangeParser.isThisKt(argAnnotations) -> DoubleRangeParser
             else -> null
         }
+
     }
 
     fun isThisKt(annotations: List<KtAnnotationEntry?>): Boolean = annotations.findThisRangeAnnotation() != null
@@ -211,13 +215,18 @@ sealed class RangeParser<T>(
         val genericError = "[failed to parse]"
         val numberAnnotation = annotations.findThisRangeAnnotation() ?: return genericError
         val annotationRange = numberAnnotation.asRangePair(minValue, maxValue, parseValueKt) ?: return genericError
-        val parsedArgumentValue = parseValueKt(valueExpression)
-        if (parsedArgumentValue == null) {
-            return when (mayBeNull) {
-                true -> null
-                false -> "Expected not null value(should be a compile error)"
-            }
+
+        val functionCallRangeInvalid = valueExpression.tryValidateFunctionalRangeOrErrorRange(annotationRange)
+        if (functionCallRangeInvalid != null) {
+            @Language("html")
+            val errorMessage = """
+                |<html><b color="#FF846A"> $functionCallRangeInvalid </b> is not in range : [ <b color="#3FC8CA">${annotationRange.from}</b> ; <b color="#41CA3F">${annotationRange.to}</b> ]</html>
+            """.trimMargin()
+            return errorMessage
         }
+
+        //TODO all unparseable things will end "here". eg lambda args etc.
+        val parsedArgumentValue = parseValueKt(valueExpression) ?: return null
 
         if (!isInRange(
                 annotationRange.from,
@@ -227,7 +236,7 @@ sealed class RangeParser<T>(
         ) {
             @Language("html")
             val errorMessage = """
-                |<html><b color="#FF846A">$parsedArgumentValue</b> is not in range:[ <b color="#3FC8CA">${annotationRange.from}</b> ; <b color="#41CA3F">${annotationRange.to}</b> ]</html>
+                |<html><b color="#FF846A">$parsedArgumentValue</b> is not in range : [ <b color="#3FC8CA">${annotationRange.from}</b> ; <b color="#41CA3F">${annotationRange.to}</b> ]</html>
             """.trimMargin()
             return errorMessage
         }
@@ -292,4 +301,27 @@ sealed class RangeParser<T>(
         elements.findThisRangeAnnotation()
 
 
+}
+
+fun KtExpression.tryValidateFunctionalRangeOrErrorRange(expectedRangePair: RangePair<*>): String? {
+    if (this is KtCallExpression) {
+        val fnc = this.resolveMainReferenceAsKtFunction() ?: return null
+        val range = RangeParser.parseKt(fnc.annotationEntries) ?: return null
+        val numberAnnotation = range.findAnnotationKt(fnc.annotationEntries) ?: return null
+        val functionRange = numberAnnotation.asRangePair(
+            minValue = range.minValue,
+            maxValue = range.maxValue,
+            parseValue = range.parseValueKt
+        ) ?: return null
+        val isValidRange = functionRange.isRangeContainedIn(expectedRangePair)
+        if (!isValidRange) {
+            return "[ ${functionRange.from} ; ${functionRange.to} ]"
+        }
+        return null
+    }
+    return null
+}
+
+fun RangePair<*>.isRangeContainedIn(other: RangePair<*>): Boolean {
+    return from >= other.from && to <= other.to
 }
