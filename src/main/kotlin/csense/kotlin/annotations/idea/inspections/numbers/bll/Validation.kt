@@ -59,6 +59,7 @@ fun KtDeclaration.validateNumberRangeFor(
         annotations = annotationEntries,
         type = resolveType(),
         typeReference = typeReference,
+        parameterName = name,
         isVarArg = isVarArg,
         valueExpressions = listOf(expression)
     )

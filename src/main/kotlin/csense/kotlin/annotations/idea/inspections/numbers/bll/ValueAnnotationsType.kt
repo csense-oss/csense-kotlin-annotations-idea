@@ -14,6 +14,7 @@ data class ValueAnnotationsType(
     val annotations: List<KtAnnotationEntry>,
     val type: KotlinType?,
     val typeReference: KtTypeReference?,
+    val parameterName: String?,
     val isVarArg: Boolean,
     val valueExpressions: List<KtExpression>
 )
@@ -21,19 +22,12 @@ data class ValueAnnotationsType(
 fun ValueAnnotationsType.validateOrReportTo(holder: ProblemsHolder) {
 
     //vararg / list of lambda's!?s ........ :(
-    val isNumberLambda = type?.isFunctionType == true
-    if (isNumberLambda) {
+    val isParameterLambda = type?.isFunctionType == true
+    if (isParameterLambda) {
         valueExpressions.forEach { expression ->
-            val lambdaError: String? = typeReference?.validateLambdaOrError(expression)
-            if (lambdaError != null) {
-                holder.registerProblemHighlightElement(
-                    psiElement = expression,
-                    descriptionTemplate = lambdaError
-                )
-            }
+            typeReference?.validateLambdaReturns(expression, parameterName, holder)
         }
-
-
+        return
     }
 
 
@@ -69,6 +63,7 @@ fun ParameterToValueExpression.toValueAnnotationsType(): ValueAnnotationsType = 
     annotations = allAnnotations,
     type = parameter.resolveType(),
     typeReference = parameter.typeReference,
+    parameterName = parameter.name,
     isVarArg = parameter.isVarArg,
     valueExpressions = valueArguments,
 )
@@ -88,24 +83,28 @@ fun KotlinType.isPrimitiveNumberArray(): Boolean = nameAsString() in setOf(
 fun KotlinType.name() = this.constructor.declarationDescriptor?.name
 fun KotlinType.nameAsString() = this.constructor.declarationDescriptor?.name?.asString()
 
-fun KtTypeReference.validateLambdaOrError(valueExpressions: KtExpression): String? {
-    val typeElement = typeElement as? KtFunctionType ?: return null
-    val argument = valueExpressions as? KtLambdaExpression ?: return null
+fun KtTypeReference.validateLambdaReturns(
+    valueExpressions: KtExpression,
+    parameterName: String?,
+    holder: ProblemsHolder
+) {
+    val typeElementOfParameter = typeElement as? KtFunctionType ?: return
 
-    val returnAnnotations = typeElement.returnTypeReference?.annotationEntries
-    val parameterAnnotations = typeElement.parameters.map {
-        ValueAnnotationsType(it.annotationEntries, it.resolveType(), it.typeReference, it.isVarArg)
-    }
+    val returnType = typeElementOfParameter.returnTypeReference ?: return
+
+    val returnAnnotationsForParameter = returnType.annotationEntries
+
+    val argumentLambda = valueExpressions as? KtLambdaExpression ?: return
+    val returnExpressions = argumentLambda.findAllReturnValueExpressions(
+        forName = parameterName
+    ) // TODO name?! argument name? hmm
+
+    val lastExpression = argumentLambda.bodyExpression?.lastChild
 
 
-
-    parameterAnnotations.map {
-    }
-
-    //TODO .. this might be the  wrong place......
-
-
-
-
-    return null//"failed to parse lambda signature and expression(s)"
+    returnExpressions.validateConstantsFor(
+        annotations = returnAnnotationsForParameter,
+        mayResultBeNull = returnType.isNullableType(),
+        holder = holder
+    )
 }

@@ -5,6 +5,7 @@ import com.intellij.codeInspection.*
 import csense.idea.base.bll.kotlin.*
 import csense.kotlin.annotations.idea.*
 import csense.kotlin.annotations.idea.inspections.numbers.bll.*
+import csense.kotlin.extensions.*
 import org.jetbrains.kotlin.idea.inspections.*
 import org.jetbrains.kotlin.psi.*
 import org.jetbrains.kotlin.psi.psiUtil.*
@@ -68,26 +69,35 @@ fun KtNamedFunction.findAllReturnExpressions(): List<KtExpression> {
 }
 
 fun KtNamedFunction.findAllReturnExpressionsForBodyBlockExpression(): List<KtExpression> {
-    return bodyBlockExpression?.findAllReturnExpressionsFor(this.name) ?: emptyList()
+    return bodyBlockExpression?.findAllReturnValueExpressions(this.name) ?: emptyList()
 }
 
 fun KtNamedFunction.findAllReturnExpressionsForBodyExpression(): List<KtExpression> {
     val bodyExpression = bodyExpression ?: return emptyList()
-    val innerReturns = bodyExpression.findAllReturnExpressionsFor(this.name)
+    val innerReturns = bodyExpression.findAllReturnValueExpressions(this.name)
     return listOf(bodyExpression) + innerReturns
 }
 
-fun KtElement.findAllReturnExpressionsFor(
-    functionName: String?
+fun KtElement.findAllReturnValueExpressions(
+    forName: String?
 ): List<KtExpression> =
-    findAllReturnsFor(functionName)
+    findExplictReturnsFor(forName)
         .mapNotNull { it.returnedExpression }
 
-fun KtElement.findAllReturnsFor(
-    functionName: String?
+fun KtElement.findImplicitReturnsFor(
+    forName: String?
+): KtElement? {
+    if(this.isNot<KtLambdaExpression>() || this !is KtFunction){
+        TODO()
+    }
+    TODO()
+}
+
+fun KtElement.findExplictReturnsFor(
+    forName: String?
 ): List<KtReturnExpression> = collectDescendantsOfType<KtReturnExpression> {
     val namedLabel = it.getLabelName() ?: return@collectDescendantsOfType true
-    namedLabel == functionName
+    namedLabel == forName
 }
 
 
