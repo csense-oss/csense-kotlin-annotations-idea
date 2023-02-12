@@ -4,7 +4,7 @@ import com.intellij.codeHighlighting.*
 import com.intellij.codeInspection.*
 import csense.kotlin.annotations.idea.*
 import csense.kotlin.annotations.idea.analyzers.*
-import csense.kotlin.annotations.idea.analyzers.noEscape.*
+//import csense.kotlin.annotations.idea.analyzers.noEscape.*
 import org.jetbrains.kotlin.idea.inspections.*
 import org.jetbrains.kotlin.psi.*
 
@@ -45,8 +45,8 @@ class NoEscapeAssignmentInspection : AbstractKotlinInspection() {
     ): KtVisitorVoid {
         
         return expressionVisitor { exp: KtExpression ->
-            val result = NoEscapeAssignmentAnalyzer.analyze(exp)
-            result.errors.forEach { error: AnalyzerError -> holder.registerProblem(error) }
+//            val result = NoEscapeAssignmentAnalyzer.analyze(exp)
+//            result.errors.forEach { error: AnalyzerError -> holder.registerProblem(error) }
         }
         
     }

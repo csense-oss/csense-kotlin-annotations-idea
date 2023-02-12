@@ -5,7 +5,7 @@ import com.intellij.codeInspection.*
 import com.intellij.openapi.diagnostic.Logger
 import csense.kotlin.annotations.idea.*
 import csense.kotlin.annotations.idea.analyzers.*
-import csense.kotlin.annotations.idea.analyzers.threading.*
+//import csense.kotlin.annotations.idea.analyzers.threading.*
 import csense.kotlin.extensions.*
 import csense.kotlin.logger.L
 import csense.kotlin.logger.usePrintAsLoggers
@@ -64,12 +64,12 @@ class QuickThreadingCallInspection : AbstractKotlinInspection() {
         isOnTheFly: Boolean
     ): KtVisitorVoid {
         return namedFunctionVisitor { ourCallFunction: KtNamedFunction ->
-            val result = logMeasureTimeInMillis {
-                ThreadingCallInspectionAnalyzer.analyze(ourCallFunction)
-            }
-            result.errors.forEach {
-                holder.registerProblem(it)
-            }
+//            val result = logMeasureTimeInMillis {
+//                ThreadingCallInspectionAnalyzer.analyze(ourCallFunction)
+//            }
+//            result.errors.forEach {
+//                holder.registerProblem(it)
+//            }
         }
     }
 }

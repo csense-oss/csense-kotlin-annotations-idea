@@ -4,7 +4,7 @@ import com.intellij.codeHighlighting.*
 import com.intellij.codeInspection.*
 import csense.idea.base.bll.kotlin.*
 import csense.kotlin.annotations.idea.*
-import csense.kotlin.annotations.idea.inspections.numbers.bll.*
+//import csense.kotlin.annotations.idea.inspections.numbers.bll.*
 import org.jetbrains.kotlin.idea.inspections.*
 import org.jetbrains.kotlin.psi.*
 
@@ -46,9 +46,9 @@ class QuickNumberRangeParameterCallInspection : AbstractKotlinInspection() {
         isOnTheFly: Boolean
     ): KtVisitorVoid = callExpressionVisitor { ourCall ->
         val function = ourCall.resolveMainReferenceAsKtFunction() ?: return@callExpressionVisitor
-        function.validateNumberRangeForCallArguments(
-            forCall = ourCall,
-            holder = holder
-        )
+//        function.validateNumberRangeForCallArguments(
+//            forCall = ourCall,
+//            holder = holder
+//        )
     }
 }

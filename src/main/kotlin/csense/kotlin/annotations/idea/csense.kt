@@ -1,3 +1,5 @@
+@file:Suppress("RedundantVisibilityModifier", "NOTHING_TO_INLINE")
+
 package csense.kotlin.annotations.idea
 
 

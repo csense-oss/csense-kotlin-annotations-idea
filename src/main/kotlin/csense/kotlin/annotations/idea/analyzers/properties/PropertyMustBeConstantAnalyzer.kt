@@ -1,6 +1,8 @@
 package csense.kotlin.annotations.idea.analyzers.properties
 
 import csense.idea.base.bll.kotlin.*
+import csense.idea.base.bll.psiWrapper.`class`.*
+import csense.idea.base.bll.psiWrapper.`class`.operations.*
 import csense.idea.base.mpp.*
 import csense.kotlin.annotations.idea.analyzers.*
 import org.jetbrains.kotlin.psi.*
@@ -9,7 +11,7 @@ import org.jetbrains.kotlin.psi.psiUtil.*
 object PropertyMustBeConstantAnalyzer : Analyzer<KtProperty> {
     override fun analyze(item: KtProperty): AnalyzerResult {
         val errors = mutableListOf<AnalyzerError>()
-        
+
         if (!item.isOverriding() && !item.hasPropertyMustBeContant()) {
             //only consider overwritten or those directly annotated.
             return AnalyzerResult(errors)
@@ -24,25 +26,31 @@ object PropertyMustBeConstantAnalyzer : Analyzer<KtProperty> {
         if (getter != null && item.setter == null && !item.isVar && getter.isProperlyConstant()) {
             return AnalyzerResult(errors)
         }
-        
+
         if (!item.hasPropertyMustBeContant() && !item.isOverridingMustBeConstantProperty()) {
             return AnalyzerResult(errors)
         }
         //we have a "non trivial " getter (or alike) and or its a setter, and its must be a constant.
         if (item.setter != null || item.isVar) {
-            
-            errors.add(AnalyzerError(
+
+            errors.add(
+                AnalyzerError(
                     item,
                     "Property must be constant, thus you are violating the contract. a setter / var is not constant",
-                    arrayOf()))
+                    arrayOf()
+                )
+            )
         } else if (item.getter != null) {
-            errors.add(AnalyzerError(
+            errors.add(
+                AnalyzerError(
                     item,
                     "Getter is properly not constant.",
-                    arrayOf()))
+                    arrayOf()
+                )
+            )
         }
-        
-        
+
+
         return AnalyzerResult(errors)
     }
 }
@@ -53,18 +61,17 @@ fun KtPropertyAccessor.isProperlyConstant(): Boolean {
     return !code.anyDescendantOfType<KtCallExpression>()
 }
 
-fun KtProperty.hasPropertyMustBeContant(): Boolean = annotationEntries
-        .toMppAnnotations()
-        .containsPropertyMustBeConstant()
+fun KtProperty.hasPropertyMustBeContant(): Boolean = annotationEntries.resolveClassTypes()
+    .containsPropertyMustBeConstant()
 
 
 fun KtProperty.isOverridingMustBeConstantProperty(): Boolean {
     return findOverridingImpl()?.hasPropertyMustBeContant()
-            ?: return false
+        ?: return false
 }
 
-fun List<MppAnnotation>.containsPropertyMustBeConstant(): Boolean = any {
-    it.qualifiedName == propertyMustBeConstantName
+fun List<KtPsiClass>.containsPropertyMustBeConstant(): Boolean = any {
+    it.fqName == propertyMustBeConstantName
 }
 
 private const val propertyMustBeConstantName = "csense.kotlin.annotations.properties.PropertyMustBeConstant"

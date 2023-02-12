@@ -3,7 +3,7 @@ package csense.kotlin.annotations.idea.inspections.numbers
 import com.intellij.codeHighlighting.*
 import com.intellij.codeInspection.*
 import csense.kotlin.annotations.idea.*
-import csense.kotlin.annotations.idea.inspections.numbers.bll.*
+//import csense.kotlin.annotations.idea.inspections.numbers.bll.*
 import org.jetbrains.kotlin.idea.inspections.*
 import org.jetbrains.kotlin.psi.*
 
@@ -44,6 +44,6 @@ class QuickNumberRangeVariableDeclarationInspection : AbstractKotlinInspection()
         holder: ProblemsHolder,
         isOnTheFly: Boolean
     ): KtVisitorVoid = propertyVisitor { property: KtProperty ->
-        property.validateNumberRangeForInitializer(holder)
+//        property.validateNumberRangeForInitializer(holder)
     }
 }

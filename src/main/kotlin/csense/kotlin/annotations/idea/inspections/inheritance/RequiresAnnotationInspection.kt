@@ -4,7 +4,7 @@ import com.intellij.codeHighlighting.*
 import com.intellij.codeInspection.*
 import csense.kotlin.annotations.idea.*
 import csense.kotlin.annotations.idea.analyzers.*
-import csense.kotlin.annotations.idea.analyzers.requiresAnnotation.*
+//import csense.kotlin.annotations.idea.analyzers.requiresAnnotation.*
 import org.jetbrains.kotlin.idea.inspections.*
 import org.jetbrains.kotlin.psi.*
 
@@ -43,8 +43,7 @@ class RequiresAnnotationInspection : AbstractKotlinInspection() {
         holder: ProblemsHolder,
         isOnTheFly: Boolean
     ): KtVisitorVoid = classOrObjectVisitor { clzOrObject ->
-        val result = RequiresAnnotationAnalyzer.analyze(clzOrObject)
-        result.errors.forEach { error: AnalyzerError -> holder.registerProblem(error) }
+//        val result = RequiresAnnotationAnalyzer.analyze(clzOrObject)
+//        result.errors.forEach { error: AnalyzerError -> holder.registerProblem(error) }
     }
-
 }

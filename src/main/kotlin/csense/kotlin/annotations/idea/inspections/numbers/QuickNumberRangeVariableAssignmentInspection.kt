@@ -5,7 +5,7 @@ import com.intellij.codeInspection.*
 import csense.idea.base.bll.kotlin.*
 import csense.idea.base.bll.kotlin.models.*
 import csense.kotlin.annotations.idea.*
-import csense.kotlin.annotations.idea.inspections.numbers.bll.*
+//import csense.kotlin.annotations.idea.inspections.numbers.bll.*
 import org.jetbrains.kotlin.idea.inspections.*
 import org.jetbrains.kotlin.psi.*
 
@@ -46,21 +46,23 @@ class QuickNumberRangeVariableAssignmentInspection : AbstractKotlinInspection() 
         holder: ProblemsHolder,
         isOnTheFly: Boolean
     ): KtVisitorVoid = binaryExpressionVisitor { expression ->
-        if (expression.isNotAssignment) {
-            return@binaryExpressionVisitor
-        }
-        val lhs = expression.left ?: return@binaryExpressionVisitor
-        val rhs = expression.right ?: return@binaryExpressionVisitor
-        val reference = lhs.resolveAsReferenceToPropertyOrValueParameter() ?: return@binaryExpressionVisitor
-
-        reference.declaration.validateNumberRangeFor(
-            expression = rhs,
-            isVarArg = reference.isVarArg(),
-            typeReference = reference.typeReference(),
-            holder = holder
-        )
+//        if (expression.isNotAssignment) {
+//            return@binaryExpressionVisitor
+//        }
+//        val lhs = expression.left ?: return@binaryExpressionVisitor
+//        val rhs = expression.right ?: return@binaryExpressionVisitor
+//        val reference = lhs.resolveAsReferenceToPropertyOrValueParameter() ?: return@binaryExpressionVisitor
+//
+//        reference.declaration.validateNumberRangeFor(
+//            expression = rhs,
+//            isVarArg = reference.isVarArg(),
+//            typeReference = reference.typeReference(),
+//            holder = holder
+//        )
     }
 }
+
+//TODO lib?
 
 fun KtParameterOrValueParameter.isVarArg(): Boolean = when (this) {
     is KtParameterOrValueParameter.Property -> false

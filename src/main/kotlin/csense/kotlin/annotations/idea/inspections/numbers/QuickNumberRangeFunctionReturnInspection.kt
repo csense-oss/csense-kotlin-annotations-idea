@@ -4,7 +4,7 @@ import com.intellij.codeHighlighting.*
 import com.intellij.codeInspection.*
 import csense.idea.base.bll.kotlin.*
 import csense.kotlin.annotations.idea.*
-import csense.kotlin.annotations.idea.inspections.numbers.bll.*
+//import csense.kotlin.annotations.idea.inspections.numbers.bll.*
 import csense.kotlin.extensions.*
 import org.jetbrains.kotlin.idea.inspections.*
 import org.jetbrains.kotlin.psi.*
@@ -47,19 +47,19 @@ class QuickNumberRangeFunctionReturnInspection : AbstractKotlinInspection() {
         holder: ProblemsHolder,
         isOnTheFly: Boolean
     ): KtVisitorVoid = namedFunctionVisitor { function ->
-        val hasAnnotation = RangeParser.parseKt(function.annotationEntries) != null
-        if (!hasAnnotation) {
-            return@namedFunctionVisitor
-        }
-        val returnExpressions = function.findAllReturnExpressions()
-
-        val mayReturnNull = function.typeReference?.isNullableType() == true
-
-        returnExpressions.validateConstantsFor(
-            annotations = function.annotationEntries,
-            mayResultBeNull = mayReturnNull,
-            holder = holder
-        )
+//        val hasAnnotation = RangeParser.parseKt(function.annotationEntries) != null
+//        if (!hasAnnotation) {
+//            return@namedFunctionVisitor
+//        }
+//        val returnExpressions = function.findAllReturnExpressions()
+//
+//        val mayReturnNull = function.typeReference?.isNullableType() == true
+//
+//        returnExpressions.validateConstantsFor(
+//            annotations = function.annotationEntries,
+//            mayResultBeNull = mayReturnNull,
+//            holder = holder
+//        )
     }
 }
 

@@ -5,7 +5,7 @@ import com.intellij.codeInspection.*
 import csense.idea.base.bll.kotlin.*
 import csense.idea.base.visitors.*
 import csense.kotlin.annotations.idea.*
-import csense.kotlin.annotations.idea.inspections.numbers.bll.*
+//import csense.kotlin.annotations.idea.inspections.numbers.bll.*
 import org.jetbrains.kotlin.idea.inspections.*
 import org.jetbrains.kotlin.psi.*
 
@@ -44,10 +44,10 @@ class QuickNumberRangeTypeValueConstructorInspection : AbstractKotlinInspection(
     override fun buildVisitor(
         holder: ProblemsHolder,
         isOnTheFly: Boolean
-    ): KtVisitorVoid = constructorVisitor {
-        it.valueParameters.validateValueParameters(holder)
-        if (it is KtSecondaryConstructor) {
-            it.getDelegationCallOrNull()?.validateDelegationCall(holder)
-        }
+    ): KtVisitorVoid = ConstructorVisitor {
+//        it.valueParameters.validateValueParameters(holder)
+//        if (it is KtSecondaryConstructor) {
+//            it.getDelegationCallOrNull()?.validateDelegationCall(holder)
+//        }
     }
 }
